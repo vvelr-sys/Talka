@@ -1,6 +1,7 @@
-import "./assets/css/globals.css"
-import "./assets/css/other.css"
-import PageTransition from "./components/Shared/PageTransition.jsx"
+import "./assets/css/globals.css";
+import "./assets/css/other.css";
+import PageTransition from "./components/Shared/PageTransition.jsx";
+import { Providers } from "./Providers";
 
 export const metadata = {
   title: "Talka",
@@ -22,7 +23,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
