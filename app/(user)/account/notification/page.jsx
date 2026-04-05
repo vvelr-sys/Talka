@@ -1,114 +1,132 @@
 "use client";
 
 import React, { useState } from "react";
-import { BellRing, Mail, MessageSquare, AppWindow, Save, Radio, Bell } from "lucide-react";
+import { BellRing, Mail, MessageSquare, AppWindow, Save, Radio, Bell, ShieldCheck, Zap } from "lucide-react";
 
 export default function NotificationSettingsPage() {
     const [emailNoti, setEmailNoti] = useState(true);
     const [smsNoti, setSmsNoti] = useState(false);
     const [inApp, setInApp] = useState(true);
 
+    const labelClass = "block text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-1 ml-1";
+    const itemContainerClass = "flex items-center justify-between p-5 rounded-[1.8rem] bg-[#1F192E] border border-white/5 hover:border-[#BE7EC7]/30 transition-all duration-300 group shadow-inner";
+
     return (
-        <div className="text-white flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col lg:flex-row gap-12 items-stretch min-h-[500px]">
 
-            {/* Main Card */}
-            <div className="w-full max-w-5xl bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl overflow-hidden flex flex-col md:flex-row">
+                {/* LEFT COLUMN: Sidebar info */}
+                <div className="w-full lg:w-80 shrink-0 flex flex-col">
+                    <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 h-full relative overflow-hidden flex flex-col">
+                        {/* Decorative Glow */}
+                        <div className="absolute -top-12 -left-12 w-32 h-32 bg-[#BE7EC7]/10 blur-[60px] rounded-full"></div>
+                        
+                        <div className="relative z-10">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#BE7EC7] to-pink-600 flex items-center justify-center mb-6 shadow-lg shadow-[#BE7EC7]/20">
+                                <BellRing className="text-white" size={28} />
+                            </div>
 
-                {/* Left Column: Sidebar info */}
-                <div className="md:w-1/3 bg-black/20 p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
-                    <div>
-                        <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-sky-500 to-indigo-500 flex items-center justify-center mb-6 shadow-lg shadow-sky-500/20">
-                            <BellRing className="text-white w-8 h-8" />
+                            <h2 className="text-xl font-black text-white tracking-tight mb-3">Manage Alerts</h2>
+                            <p className="text-white/40 text-xs leading-relaxed mb-8 font-medium">
+                                Decide how and when you want to be notified. Your preferences sync across all devices.
+                            </p>
                         </div>
 
-                        <h2 className="text-xl font-bold mb-2">Manage Alerts</h2>
-                        <p className="text-white/50 text-sm mb-6 leading-relaxed">
-                            Decide how and when you want to be notified. You can update these preferences at any time.
-                        </p>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-                        <h4 className="text-indigo-300 font-medium text-sm mb-2 flex items-center gap-2">
-                            <Radio size={16} className="animate-pulse" />
-                            Pro Tip
-                        </h4>
-                        <p className="text-xs text-indigo-200/70">
-                            Turn on SMS notifications for urgent security alerts to ensure you never miss critical updates.
-                        </p>
+                        {/* Pro Tip Card */}
+                        <div className="mt-auto p-5 rounded-2xl bg-[#BE7EC7]/5 border border-[#BE7EC7]/10 relative overflow-hidden group/tip">
+                            <div className="absolute top-0 right-0 p-2 opacity-10 group-hover/tip:scale-110 transition-transform">
+                                <Zap size={40} className="text-[#BE7EC7]" />
+                            </div>
+                            <h4 className="text-[#BE7EC7] font-black text-[10px] uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                <Radio size={14} className="animate-pulse" />
+                                Pro Tip
+                            </h4>
+                            <p className="text-[11px] text-white/40 leading-relaxed font-medium relative z-10">
+                                Turn on <span className="text-white/60">SMS notifications</span> for urgent security alerts to ensure you never miss critical workspace updates.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 {/* Right Column: Settings List */}
-                <div className="md:w-2/3 p-8 md:p-12">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-white to-white/60">
-                            Notification Settings
-                        </h1>
-                        <p className="text-white/40 text-sm mt-1">Customize your digital experience.</p>
+                <div className="flex-1 flex flex-col justify-center">
+                    <div className="mb-10">
+                        <div className="flex items-center gap-3 mb-1">
+                            <h1 className="text-3xl font-black text-white tracking-tight">Notification Settings</h1>
+                            <div className="p-2 bg-[#BE7EC7]/10 rounded-xl text-[#BE7EC7] hidden sm:block">
+                                <Bell size={20} />
+                            </div>
+                        </div>
+                        <p className="text-white/30 text-sm font-medium">Customize your digital communication experience.</p>
                     </div>
 
-                    <div className="space-y-6">
-
+                    <div className="space-y-4 max-w-2xl">
+                        
                         {/* Setting Item: Email */}
-                        <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group">
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 rounded-full bg-white/5 text-sky-400 group-hover:scale-110 transition-transform">
-                                    <Mail size={24} />
+                        <div className={itemContainerClass}>
+                            <div className="flex items-center gap-5">
+                                <div className="p-4 rounded-2xl bg-white/5 text-[#BE7EC7] group-hover:scale-110 group-hover:bg-[#BE7EC7]/10 transition-all duration-500 shadow-inner">
+                                    <Mail size={22} />
                                 </div>
                                 <div>
-                                    <h5 className="font-semibold text-white">Email Notifications</h5>
-                                    <p className="text-xs text-white/50 mt-1">Receive weekly digests and major updates.</p>
+                                    <h5 className="font-bold text-white tracking-tight text-base">Email Notifications</h5>
+                                    <p className="text-[11px] text-white/30 font-medium mt-0.5">Receive weekly digests and major system updates.</p>
                                 </div>
                             </div>
                             {/* Toggle Switch */}
-                            <label className="relative inline-flex items-center cursor-pointer">
+                            <label className="relative inline-flex items-center cursor-pointer scale-110">
                                 <input type="checkbox" checked={emailNoti} onChange={() => setEmailNoti(!emailNoti)} className="sr-only peer" />
-                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-2 after:start-2 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+                                <div className="w-12 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 rtl:peer-checked:after:-translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#BE7EC7] shadow-lg"></div>
                             </label>
                         </div>
 
                         {/* Setting Item: SMS */}
-                        <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group">
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 rounded-full bg-white/5 text-amber-400 group-hover:scale-110 transition-transform">
-                                    <MessageSquare size={24} />
+                        <div className={itemContainerClass}>
+                            <div className="flex items-center gap-5">
+                                <div className="p-4 rounded-2xl bg-white/5 text-amber-400 group-hover:scale-110 group-hover:bg-amber-400/10 transition-all duration-500 shadow-inner">
+                                    <MessageSquare size={22} />
                                 </div>
                                 <div>
-                                    <h5 className="font-semibold text-white">SMS Notifications</h5>
-                                    <p className="text-xs text-white/50 mt-1">Instant alerts for security and login attempts.</p>
+                                    <h5 className="font-bold text-white tracking-tight text-base">SMS Notifications</h5>
+                                    <p className="text-[11px] text-white/30 font-medium mt-0.5">Instant alerts for security and critical login attempts.</p>
                                 </div>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
+                            <label className="relative inline-flex items-center cursor-pointer scale-110">
                                 <input type="checkbox" checked={smsNoti} onChange={() => setSmsNoti(!smsNoti)} className="sr-only peer" />
-                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-2 after:start-2 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                <div className="w-12 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 rtl:peer-checked:after:-translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500 shadow-lg"></div>
                             </label>
                         </div>
 
                         {/* Setting Item: In-App */}
-                        <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group">
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 rounded-full bg-white/5 text-indigo-400 group-hover:scale-110 transition-transform">
-                                    <AppWindow size={24} />
+                        <div className={itemContainerClass}>
+                            <div className="flex items-center gap-5">
+                                <div className="p-4 rounded-2xl bg-white/5 text-pink-400 group-hover:scale-110 group-hover:bg-pink-400/10 transition-all duration-500 shadow-inner">
+                                    <AppWindow size={22} />
                                 </div>
                                 <div>
-                                    <h5 className="font-semibold text-white">In-app Notifications</h5>
-                                    <p className="text-xs text-white/50 mt-1">Real-time banners while you are using the app.</p>
+                                    <h5 className="font-bold text-white tracking-tight text-base">In-app Notifications</h5>
+                                    <p className="text-[11px] text-white/30 font-medium mt-0.5">Real-time banners and activity dots within the app.</p>
                                 </div>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
+                            <label className="relative inline-flex items-center cursor-pointer scale-110">
                                 <input type="checkbox" checked={inApp} onChange={() => setInApp(!inApp)} className="sr-only peer" />
-                                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-2 after:start-2 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                                <div className="w-12 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 rtl:peer-checked:after:-translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-500 shadow-lg"></div>
                             </label>
                         </div>
 
                     </div>
 
-                    {/* Actions */}
-                    <div className="pt-8 mt-4 border-t border-white/5 flex items-center justify-end">
+                    {/* Actions Area */}
+                    <div className="pt-10 mt-6 border-t border-white/5 flex items-center justify-end gap-6 max-w-2xl">
+                        <div className="hidden sm:flex items-center gap-2 text-[10px] font-black text-white/10 uppercase tracking-[0.3em] mr-auto">
+                            <ShieldCheck size={14} />
+                            <span>Preferences Secured</span>
+                        </div>
+                        
                         <button
-                            className="flex items-center gap-2 rounded-xl px-8 py-3 bg-linear-to-r from-sky-600 to-indigo-600 text-white font-semibold shadow-lg shadow-sky-600/20 hover:shadow-sky-600/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#BE7EC7] to-pink-600 text-white font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-[#BE7EC7]/20 hover:shadow-[#BE7EC7]/40 hover:scale-[1.02] active:scale-95 transition-all"
                         >
-                            <Save size={18} />
+                            <Save size={16} />
                             Save Preferences
                         </button>
                     </div>

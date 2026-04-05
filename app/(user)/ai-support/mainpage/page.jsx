@@ -1,110 +1,132 @@
 "use client";
+import React from "react";
 import {
   SmilePlus,
   BookOpenText,
   MessageCircle,
   Users,
   Database,
-  Play, // เพิ่ม icon play
-  CheckCircle2, // เพิ่ม icon check
+  Play,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 export default function AiSupport({ onNext }) {
+  const features = [
+    {
+      icon: MessageCircle,
+      title: "24/7 Response",
+      desc: "Replies to messages instantly around the clock.",
+      color: "border-blue-500/50",
+      shadow: "shadow-blue-500/20",
+      iconColor: "text-blue-400",
+    },
+    {
+      icon: Database,
+      title: "Auto-Training",
+      desc: "Lifecycle stages are automatically updated.",
+      color: "border-[#BE7EC7]/50",
+      shadow: "shadow-[#BE7EC7]/20",
+      iconColor: "text-[#BE7EC7]",
+    },
+    {
+      icon: Users,
+      title: "Human Handoff",
+      desc: "Smart routing to human agents and teams.",
+      color: "border-emerald-500/50",
+      shadow: "shadow-emerald-500/20",
+      iconColor: "text-emerald-400",
+    },
+  ];
+
   return (
-    <>
-      <div className="w-full h-[94vh] p-2 md:p-4">
-        <div className="bg-[rgba(32,41,59,0.37)] border border-[rgba(254,253,253,0.1)] backdrop-blur-xl rounded-3xl shadow-2xl pt-5 px-4 h-full flex flex-col overflow-hidden relative">
+    <div className="w-full h-[95vh] p-4 lg:p-8 text-white">
+      <div className="bg-[#161223] border border-white/[0.05] rounded-[3.5rem] shadow-2xl h-full flex flex-col relative overflow-hidden">
+        
+        {/* Ambient Background Glows */}
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#BE7EC7]/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full" />
 
-          <div className="flex justify-between items-start p-8 relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/5 rounded-xl border border-white/10">
-                <SmilePlus className="text-white" size={40} />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-white">AI Agent</h1>
-                <p className="text-sm text-white/60">
-                  Handle more conversations with less effort.
-                </p>
-              </div>
+        {/* 1. Header Navigation */}
+        <nav className="flex justify-between items-center px-12 py-8 relative z-20">
+          <div className="flex items-center gap-4 group cursor-pointer">
+            <div className="w-10 h-10 bg-[#BE7EC7] rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12">
+              <SmilePlus size={24} />
+            </div>
+            <span className="font-black text-sm uppercase tracking-[0.3em] opacity-80">Agent</span>
+          </div>
+          
+          <button className="group flex items-center gap-2 text-white/30 hover:text-white transition-all font-bold text-xs uppercase tracking-widest">
+            <BookOpenText size={16} className="group-hover:text-[#BE7EC7]" />
+            <span>Docs</span>
+          </button>
+        </nav>
+
+        {/* 2. Hero Content Area */}
+        <div className="flex-1 flex flex-col items-center px-16 relative z-10 overflow-y-auto custom-scrollbar pb-12">
+          
+          {/* Headline Section */}
+          <div className="max-w-4xl text-center mb-12">
+            <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full mb-6">
+              <Sparkles size={14} className="text-[#BE7EC7]" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#BE7EC7]">Intelligence v3.0</span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-white/70 hover:text-white py-2 px-4 cursor-pointer transition rounded-full hover:bg-white/5">
-                <BookOpenText size={20} />
-                <span className="text-sm font-medium">Learn more</span>
-              </div>
-            </div>
+            <h1 className="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tighter mb-6">
+              Empower your team with <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/40 font-black">
+                Autonomous AI
+              </span>
+            </h1>
+
+            <button
+              onClick={onNext}
+              className="group relative px-10 py-4 rounded-2xl bg-[#BE7EC7] text-white font-black text-xs uppercase tracking-[0.2em] transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#BE7EC7]/20"
+            >
+              <span className="relative z-10 flex items-center gap-3">
+                Get Started Now <ArrowRight size={18} />
+              </span>
+            </button>
           </div>
 
-          <div className="border-t border-white/10 mx-7 mb-6 relative z-10"></div>
-
-          <div className="flex flex-col lg:flex-row justify-between items-center flex-1 px-8 lg:px-16 pb-12 gap-12 relative z-10">
-
-            <div className="max-w-xl w-full">
-              <h1 className="text-4xl lg:text-5xl font-bold text-white leading-[1.15]">
-                Grow your team with <br />
-                <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-300 to-indigo-300">
-                  AI Support
-                </span>
-              </h1>
-              <p className="text-white/60 text-lg mt-6 leading-relaxed max-w-md">
-                Built to handle hundreds of conversations at a time seamlessly.
-              </p>
-
-              <div className="mt-10 space-y-6">
-                {[
-                  { icon: MessageCircle, text: "Replies to messages instantly, 24/7" },
-                  { icon: Database, text: "Updates Lifecycle Stages automatically" },
-                  { icon: Users, text: "Smart routing to agents & teams" }
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-4 group">
-                    <div className="mt-1 p-1.5 rounded-lg bg-purple-500/20 text-purple-300 group-hover:bg-purple-500/30 group-hover:scale-110 transition-all duration-300">
-                      <item.icon size={18} />
-                    </div>
-                    <span className="text-white/80 text-base group-hover:text-white transition-colors">
-                      {item.text}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-10">
-                <button
-                  onClick={onNext}
-                  className="px-8 py-3.5 rounded-xl bg-linear-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white font-semibold shadow-lg shadow-purple-900/40 hover:shadow-purple-600/40 hover:-translate-y-0.5 transition-all duration-300"
-                >
-                  Get started
-                </button>
-              </div>
-            </div>
-
-
-            <div className="w-full max-w-2xl aspect-video relative group">
-
-              <div className="absolute inset-0 bg-linear-to-tr from-purple-500/10 to-blue-500/10 rounded-2xl blur-2xl transform group-hover:scale-105 transition-transform duration-500"></div>
-
-              <div className="relative w-full h-full bg-slate-900/40 border border-white/10 backdrop-blur-md rounded-2xl overflow-hidden flex flex-col shadow-2xl">
-                <div className="h-9 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-400/80"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-400/80"></div>
+          {/* 3. Feature Cards: "The Highlight Section" */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mt-4">
+            {features.map((item, i) => (
+              <div 
+                key={i} 
+                className={`group relative flex flex-col items-center p-8 rounded-[2.5rem] bg-white/[0.02] border ${item.color} shadow-2xl ${item.shadow} transition-all duration-500 hover:-translate-y-2 hover:bg-white/[0.05]`}
+              >
+                {/* Icon Box */}
+                <div className={`w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center ${item.iconColor} mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                  <item.icon size={32} />
                 </div>
 
-                <div className="flex-1 flex items-center justify-center relative bg-linear-to-br from-white/5 to-transparent">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center group-hover:scale-105 transition-transform duration-300 cursor-pointer">
-                    <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center mb-3 shadow-lg group-hover:bg-purple-600/80 group-hover:border-purple-500 transition-colors">
-                      <Play className="text-white ml-1" size={28} fill="currentColor" />
-                    </div>
-                    <span className="text-white/50 text-sm font-medium tracking-wider uppercase group-hover:text-white/80 transition-colors">Watch Preview</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+                {/* Text Content */}
+                <h3 className="text-lg font-black uppercase tracking-[0.2em] mb-3 text-center">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-white/40 text-center leading-relaxed font-medium">
+                  {item.desc}
+                </p>
 
+                {/* Hover Glow Effect */}
+                <div className={`absolute inset-0 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity blur-2xl -z-10 bg-gradient-to-br from-transparent via-white/5 to-transparent`} />
+              </div>
+            ))}
           </div>
 
         </div>
+
+        {/* 4. Footer Decor */}
+        <div className="px-16 py-8 opacity-20 flex justify-between items-center shrink-0">
+          <span className="text-[9px] font-bold tracking-[0.5em] uppercase">Private Alpha Access</span>
+          <div className="flex items-center gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,1)]" />
+            <span className="text-[9px] font-bold tracking-[0.5em] uppercase">System Ready</span>
+          </div>
+        </div>
+
       </div>
-    </>
+    </div>
   );
 }

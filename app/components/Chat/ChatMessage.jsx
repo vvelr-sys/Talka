@@ -6,7 +6,7 @@ import Picker from "emoji-picker-react";
 export default function ChatMessage({ chat, availableAgents, onSelectAiAgent, aiPrompts = [], currentUser, onSendMessage, availableTags = [] }) {
     if (!chat) {
         return (
-            <div className="flex-1 flex justify-center items-center text-white/60 text-lg">
+            <div className="flex-1 min-w-0 h-full bg-[#1E1B29] border border-[#BE7EC7]/10 rounded-3xl shadow-xl flex justify-center items-center text-[#BE7EC7] font-medium text-sm">
                 เลือกแชททางซ้ายเพื่อดูข้อความ
             </div>
         );
@@ -46,13 +46,16 @@ export default function ChatMessage({ chat, availableAgents, onSelectAiAgent, ai
     const handleSendClick = async () => {
         const text = textareaRef.current?.value;
 
-        if (!text?.trim()) return;
+        // เช็คว่าถ้าไม่มีทั้งข้อความและไฟล์ ให้ return กลับไป
+        if (!text?.trim() && files.length === 0) return;
 
         // ✅ Clear input immediately
         textareaRef.current.value = "";
         setHeight(100);
+        setFiles([]); // เคลียร์ไฟล์ที่แนบหลังจากกดส่ง
+        setShowEmojiPicker(false);
 
-        // ✅ Call parent handler
+        // ✅ Call parent handler (ในอนาคตถ้า API รองรับไฟล์ ต้องส่ง files ไปด้วย)
         if (onSendMessage) {
             await onSendMessage(chat.id, text);
         }
@@ -69,6 +72,8 @@ export default function ChatMessage({ chat, availableAgents, onSelectAiAgent, ai
         if (textareaRef.current) {
             textareaRef.current.value = "";
             setHeight(100);
+            setFiles([]);
+            setShowEmojiPicker(false);
         }
     }, [chat?.id]);
 
@@ -131,42 +136,44 @@ export default function ChatMessage({ chat, availableAgents, onSelectAiAgent, ai
     };
 
     return (
-        <div className="flex-1 min-w-0 h-full bg-linear-to-br from-gray-800/40 to-gray-900/40 border border-gray-700/50 backdrop-blur-sm rounded-2xl shadow-lg p-5 flex flex-col overflow-hidden">
+        <div className="flex-1 min-w-0 h-full bg-[#1E1B29] border border-[#BE7EC7]/10 rounded-3xl shadow-xl p-5 flex flex-col overflow-hidden">
 
             {/* --- Header --- */}
-            <div className="shrink-0 flex items-center justify-between border-b border-gray-700/50 pb-4 mb-4 gap-3">
+            <div className="shrink-0 flex items-center justify-between border-b border-white/5 pb-4 mb-4 gap-3">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="relative w-12 h-12 shrink-0">
                         {chat?.imgUrl ? (
-                            <img src={chat.imgUrl} alt={chat?.name} className="w-full h-full rounded-full object-cover shadow-sm bg-gray-700" />
+                            <img src={chat.imgUrl} alt={chat?.name} className="w-full h-full rounded-2xl object-cover shadow-sm bg-white/5 border border-white/10" />
                         ) : (
-                            <div className="w-full h-full bg-linear-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-2xl shadow-lg font-bold text-white">
+                            <div className="w-full h-full bg-gradient-to-br from-[#BE7EC7] to-[#8a55b5] rounded-2xl flex items-center justify-center text-2xl shadow-lg font-bold text-white border border-white/10">
                                 {chat?.avatar || "?"}
                             </div>
                         )}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                        <h2 className="text-white font-semibold text-lg truncate">{chat?.name}</h2>
-                        <span className="text-gray-400 text-xs">Status: {chat?.status}</span>
+                        <h2 className="text-white font-semibold text-lg truncate leading-tight mb-1">{chat?.name}</h2>
+                        <span className="text-[10px] text-[#BE7EC7] uppercase tracking-wider font-semibold px-2 py-0.5 rounded border border-[#BE7EC7]/20 bg-[#BE7EC7]/10">
+                            {chat?.status}
+                        </span>
                     </div>
                 </div>
             </div>
 
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto space-y-4 text-white/90 pr-2 mb-4 flex flex-col">
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 text-white/90 pr-2 mb-4 flex flex-col">
                 {messages && messages.length > 0 ? (
                     messages.map((msg, index) => {
                         const isMe = msg.from === 'me' || msg.from === 'AGENT';
                         return (
                             <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                <span className={`text-xs mb-1 ${isMe ? 'text-right text-gray-500' : 'text-left text-gray-500'}`}>
+                                <span className="text-[10px] text-white/30 mb-1 px-1">
                                     {msg.time}
                                 </span>
-                                <div className={`px-4 py-3 rounded-2xl max-w-[70%] text-sm wrap-break-words ${
+                                <div className={`px-4 py-2.5 rounded-2xl max-w-[70%] text-sm wrap-break-words shadow-sm ${
                                     isMe 
-                                        ? 'bg-blue-600 text-white rounded-br-none' 
-                                        : 'bg-gray-700/60 text-white rounded-bl-none'
+                                        ? 'bg-[#BE7EC7] text-white rounded-br-sm' 
+                                        : 'bg-white/5 border border-white/10 text-white/90 rounded-bl-sm'
                                 }`}>
                                     {msg.text}
                                 </div>
@@ -174,7 +181,7 @@ export default function ChatMessage({ chat, availableAgents, onSelectAiAgent, ai
                         );
                     })
                 ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="flex items-center justify-center h-full text-white/30 text-sm">
                         No messages yet
                     </div>
                 )}
@@ -182,26 +189,79 @@ export default function ChatMessage({ chat, availableAgents, onSelectAiAgent, ai
             </div>
 
             {/* Input Area */}
-            <div className="shrink-0 border-t border-gray-700/50 pt-4">
+            <div className="relative shrink-0 border-t border-white/5 pt-4">
+                
+                {/* Emoji Picker Popup */}
+                {showEmojiPicker && (
+                    <div className="absolute bottom-full right-0 mb-2 z-50">
+                        <Picker onEmojiClick={onEmojiClick} theme="dark" />
+                    </div>
+                )}
+
+                {/* File Preview Area */}
+                {files.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                        {files.map((file, index) => (
+                            <div key={index} className="flex items-center gap-2 bg-white/10 text-white/80 text-xs px-3 py-1.5 rounded-lg border border-white/10">
+                                <i className="fa-solid fa-file text-[#BE7EC7]"></i>
+                                <span className="max-w-[100px] truncate">{file.name}</span>
+                                <button onClick={() => handleRemoveFile(index)} className="hover:text-red-400 ml-1 transition-colors">
+                                    <i className="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <textarea
                     ref={textareaRef}
                     onKeyDown={handleKeyDown}
                     style={{ height: `${Math.min(height, 150)}px` }}
-                    className="w-full p-3 bg-gray-800/50 text-white placeholder-gray-500 rounded-lg border border-gray-700/50 focus:border-blue-500 focus:outline-none resize-none"
+                    className="w-full p-3.5 bg-white/5 text-white text-sm placeholder:text-white/30 rounded-xl border border-white/10 focus:border-[#BE7EC7] focus:ring-1 focus:ring-[#BE7EC7] focus:outline-none resize-none custom-scrollbar transition-all"
                     placeholder="Type a message..."
                 />
 
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2 mt-3 items-center">
+                    {/* Hidden File Input */}
+                    <input
+                        type="file"
+                        multiple
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
+
+                    {/* Attach Button */}
+                    <button 
+                        onClick={handleAttachClick}
+                        data-tooltip-id="attach-tooltip"
+                        data-tooltip-content="Attach file"
+                        className="w-10 h-10 flex items-center justify-center shrink-0 bg-white/5 hover:bg-white/10 text-white/50 hover:text-[#BE7EC7] rounded-xl transition-all border border-white/5 hover:border-[#BE7EC7]/30"
+                    >
+                        <i className="fa-solid fa-paperclip"></i>
+                    </button>
+
+                    {/* Emoji Button */}
+                    <button 
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className={`w-10 h-10 flex items-center justify-center shrink-0 rounded-xl transition-all border ${showEmojiPicker ? 'bg-[#BE7EC7]/20 text-[#BE7EC7] border-[#BE7EC7]/50' : 'bg-white/5 hover:bg-white/10 text-white/50 hover:text-[#BE7EC7] border-white/5 hover:border-[#BE7EC7]/30'}`}
+                    >
+                        <i className="fa-regular fa-face-smile"></i>
+                    </button>
+
+                    {/* Send Button */}
                     <button 
                         onClick={handleSendClick}
-                        className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+                        className="flex-1 px-4 py-2.5 bg-[#BE7EC7] hover:bg-[#a66bb0] text-white rounded-xl transition-all font-semibold flex items-center justify-center gap-2 shadow-lg shadow-[#BE7EC7]/20"
                     >
+                        <i className="fa-solid fa-paper-plane text-xs"></i>
                         Send
                     </button>
                 </div>
             </div>
 
-            <Tooltip id="attach-tooltip" />
+            {/* Custom Tooltip Style */}
+            <Tooltip id="attach-tooltip" className="!bg-[#1E1B29] !text-white/90 !border !border-white/10 !rounded-lg !text-xs !px-2 !py-1 shadow-xl" />
         </div>
     );
 }

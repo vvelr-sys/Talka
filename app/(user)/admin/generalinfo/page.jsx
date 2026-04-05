@@ -1,166 +1,242 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Home, Save } from "lucide-react";
+import { 
+  Home, Save, Globe, Clock, Monitor, ShieldCheck, 
+  Settings2, Plus, Users, MessageSquare, AlertCircle, Trash2, Camera
+} from "lucide-react";
 
 function GeneralInfoContent() {
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("id");
 
-  const [timeout, setTimeoutValue] = useState(0);
-  const [timezone, setTimezone] = useState("(GMT+07:00) Asia/Bangkok");
+  // --- States ---
   const [workspaceName, setWorkspaceName] = useState("");
-
-  const [currentWsId, setCurrentWsId] = useState(null);
+  const [timeout, setTimeoutValue] = useState(30);
+  const [timezone, setTimezone] = useState("(GMT+07:00) Asia/Bangkok");
   const [loading, setLoading] = useState(true);
+  
+  // Mock Usage Data
+  const [usage] = useState({
+    users: 6,
+    maxUsers: 10,
+    messages: 1420,
+    maxMessages: 5000,
+    storage: 0.8, // GB
+    maxStorage: 2
+  });
 
-  // 🟢 [BACKEND NOTE]: โหลดข้อมูล Workspace จาก API 
   useEffect(() => {
     const fetchWorkspaceInfo = async () => {
       try {
         setLoading(true);
-
-        // 🟢 [API CALL]: ตัวอย่างการดึงข้อมูล Workspace ที่ต้องการ
-        // let url = '/api/workspaces/current'; // ดึง default
-        // if (workspaceId) url = `/api/workspaces/${workspaceId}`;
-        // 
-        // const response = await fetch(url);
-        // const targetWs = await response.json();
-
-        // ==========================================
-        // [Mock Processing] จำลองข้อมูลระหว่างรอ API
-        const targetWs = {
-          id: workspaceId || 1,
-          name: "My Workspace",
-          timeout: 30,
-          timezone: "(GMT+07:00) Asia/Bangkok"
-        };
-        // ==========================================
-
-        if (targetWs) {
-          setCurrentWsId(targetWs.id);
-          setWorkspaceName(targetWs.name || "");
-          if (targetWs.timeout !== undefined) setTimeoutValue(targetWs.timeout);
-          if (targetWs.timezone !== undefined) setTimezone(targetWs.timezone);
-        }
+        // [Mock Data Simulation]
+        setTimeout(() => {
+          setWorkspaceName("My Workspace");
+          setLoading(false);
+        }, 500);
       } catch (error) {
-        console.error("Error fetching workspace info:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching data:", error);
       }
     };
-
     fetchWorkspaceInfo();
   }, [workspaceId]);
 
-  // 🟢 [BACKEND NOTE]: บันทึกข้อมูลที่แก้ไขกลับไปที่ API (PUT/PATCH)
-  const handleSave = async () => {
-    if (!currentWsId) return;
-
-    const payload = {
-      name: workspaceName,
-      timeout: Number(timeout), // ตรวจสอบชนิดข้อมูล
-      timezone: timezone
-    };
-
-    try {
-      // 🟢 [API CALL]: 
-      // const response = await fetch(`/api/workspaces/${currentWsId}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(payload)
-      // });
-      // if (!response.ok) throw new Error("Failed to save");
-
-      alert("Saved successfully!");
-    } catch (error) {
-      console.error("Error saving workspace:", error);
-      alert("Error saving. Please try again.");
-    }
+  const handleSave = () => {
+    alert("Configuration updated successfully!");
   };
 
-  if (loading) return <div className="p-10 text-white animate-pulse">Loading workspace data...</div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center h-full text-white/20 animate-pulse">
+        <Settings2 size={48} className="mb-4" />
+        <p className="font-bold uppercase tracking-widest text-xs">Syncing Settings...</p>
+    </div>
+  );
 
- 
+  const inputClass = "w-full bg-white/[0.03] border border-white/10 focus:border-[#BE7EC7]/50 focus:bg-white/[0.08] outline-none rounded-2xl py-3 px-4 text-white text-sm transition-all placeholder:text-white/20";
+  const labelClass = "block text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2 ml-1";
+  const sectionHeaderClass = "flex items-center gap-3 mb-6";
+  const sectionTitleClass = "text-xs font-bold text-[#BE7EC7] uppercase tracking-[0.25em]";
+
   return (
-    <div className="w-full h-[94vh] p-2 md:p-4">
-      <div className="bg-[rgba(32,41,59,0.37)] border border-[rgba(254,253,253,0.5)] backdrop-blur-xl rounded-3xl shadow-2xl pt-5 px-4 h-full flex flex-col">
+    <div className="w-full h-[94vh] p-4 lg:p-6 ">
+      <div className="bg-[#161223] border border-white/5 rounded-[2.5rem] shadow-2xl h-full flex flex-col overflow-hidden">
 
-        {/* Header */}
-        <div className="relative max-w-3xl p-8 pb-0">
-          <div className="flex items-center gap-3 mb-8 ">
-            <Home className="text-white p-2 bg-white/5 rounded-xl border border-white/10" size={50} />
+        {/* --- Header Section --- */}
+        <div className="p-8 pb-6 shrink-0">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 rounded-2xl bg-[#BE7EC7] flex items-center justify-center shadow-[0_0_20px_rgba(190,126,199,0.3)]">
+              <Home className="text-white" size={28} />
+            </div>
             <div>
-              <h1 className="text-xl font-semibold text-white">General Info</h1>
-              <p className="text-sm text-white/70">
-                Change general Workspace-level settings.
-              </p>
+              <h1 className="text-2xl font-bold text-white tracking-tight leading-none">General Settings</h1>
+              <p className="text-white/30 text-xs mt-2 font-medium">Manage your workspace identity, regional preferences, and usage limits.</p>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-white/28 mx-7 mb-4"></div>
+        <div className="h-px bg-white/5 mx-8"></div>
 
-        {/* Form Content */}
-        <div className="relative max-w-3xl p-8 pt-2">
-          <div className="flex flex-col gap-8 p-6">
+        {/* --- Main Content Scroll Area --- */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-8 pt-6">
+          <div className="max-w-4xl space-y-12">
+            
+            {/* 1. Workspace Branding Section */}
+            <section>
+              <div className={sectionHeaderClass}>
+                <div className="w-1.5 h-4 bg-[#BE7EC7] rounded-full"></div>
+                <h3 className={sectionTitleClass}>Branding & Identity</h3>
+              </div>
+              
+              <div className="p-8 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-10">
+                <div className="relative group">
+                  <div className="w-32 h-32 rounded-[2.5rem] bg-[#1F192E] border-2 border-dashed border-white/10 flex flex-col items-center justify-center overflow-hidden group-hover:border-[#BE7EC7]/50 transition-all cursor-pointer relative">
+                    <Camera size={28} className="text-white/10 group-hover:text-[#BE7EC7] transition-colors mb-2" />
+                    <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Upload Logo</span>
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-[#BE7EC7]/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                       <Plus size={24} className="text-[#BE7EC7]" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <label className={labelClass}>Workspace Display Name</label>
+                    <div className="relative">
+                      <Monitor className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                      <input
+                        type="text"
+                        value={workspaceName}
+                        onChange={(e) => setWorkspaceName(e.target.value)}
+                        placeholder="e.g. My Creative Agency"
+                        className={`${inputClass} pl-11`}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-white/30 leading-relaxed font-medium">
+                    This name and logo will be visible to all team members and used in outgoing communications.
+                  </p>
+                </div>
+              </div>
+            </section>
 
-            {/* Workspace Name */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Workspace Name
-              </label>
-              <input
-                type="text"
-                value={workspaceName}
-                onChange={(e) => setWorkspaceName(e.target.value)}
-                placeholder="My Workspace"
-                className="w-full px-4 py-2 rounded-lg bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40 border border-transparent transition-all"
-              />
-            </div>
+            {/* 2. Usage & Limits (Progress Bars) */}
+            <section>
+              <div className={sectionHeaderClass}>
+                <div className="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
+                <h3 className={sectionTitleClass}>Usage & Subscription</h3>
+              </div>
 
-            {/* User Inactivity Timeout */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                User Inactivity Timeout (Minutes)
-              </label>
-              <input
-                type="number"
-                value={timeout}
-                onChange={(e) => setTimeoutValue(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/40"
-              />
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Users Limit */}
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
+                  <div className="flex justify-between items-end mb-4">
+                    <div className="flex items-center gap-2 text-white/40">
+                       <Users size={14} />
+                       <span className="text-[10px] font-black uppercase">Member Seats</span>
+                    </div>
+                    <span className="text-xs font-bold text-white">{usage.users} / {usage.maxUsers}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#BE7EC7] rounded-full shadow-[0_0_8px_rgba(190,126,199,0.5)]" style={{ width: `${(usage.users/usage.maxUsers)*100}%` }}></div>
+                  </div>
+                </div>
 
-            {/* Time Zone */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Time Zone
-              </label>
-              <select
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/40 cursor-pointer appearance-none"
-              >
-                <option className="bg-[#1e1e24] text-white" value="(GMT+07:00) Asia/Bangkok">
-                  (GMT+07:00) Asia/Bangkok
-                </option>
-                <option className="bg-[#1e1e24] text-white" value="(GMT+08:00) Singapore">
-                  (GMT+08:00) Singapore
-                </option>
-                <option className="bg-[#1e1e24] text-white" value="(GMT+09:00) Tokyo">
-                  (GMT+09:00) Tokyo
-                </option>
-              </select>
-            </div>
+                {/* Messages Limit */}
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
+                  <div className="flex justify-between items-end mb-4">
+                    <div className="flex items-center gap-2 text-white/40">
+                       <MessageSquare size={14} />
+                       <span className="text-[10px] font-black uppercase">Monthly Chats</span>
+                    </div>
+                    <span className="text-xs font-bold text-white">{usage.messages.toLocaleString()}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" style={{ width: `${(usage.messages/usage.maxMessages)*100}%` }}></div>
+                  </div>
+                </div>
 
-            {/* Save Button Zone */}
-            <div className="flex justify-end pt-4">
+                {/* Storage Limit */}
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
+                  <div className="flex justify-between items-end mb-4">
+                    <div className="flex items-center gap-2 text-white/40">
+                       <ShieldCheck size={14} />
+                       <span className="text-[10px] font-black uppercase">Data Storage</span>
+                    </div>
+                    <span className="text-xs font-bold text-white">{usage.storage}GB / {usage.maxStorage}GB</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]" style={{ width: `${(usage.storage/usage.maxStorage)*100}%` }}></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 3. Regional Settings */}
+            <section>
+              <div className={sectionHeaderClass}>
+                <div className="w-1.5 h-4 bg-blue-500 rounded-full"></div>
+                <h3 className={sectionTitleClass}>Regional & Preferences</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                <div>
+                  <label className={labelClass}>Default Time Zone</label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                    <select
+                      value={timezone}
+                      onChange={(e) => setTimezone(e.target.value)}
+                      className={`${inputClass} pl-11 appearance-none cursor-pointer`}
+                    >
+                      <option value="(GMT+07:00) Asia/Bangkok" className="bg-[#1F192E]">Bangkok (GMT+07:00)</option>
+                      <option value="(GMT+08:00) Singapore" className="bg-[#1F192E]">Singapore (GMT+08:00)</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none text-[10px]">▼</div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Member Session Timeout (Min)</label>
+                  <div className="relative">
+                    <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                    <input
+                      type="number"
+                      value={timeout}
+                      onChange={(e) => setTimeoutValue(e.target.value)}
+                      className={`${inputClass} pl-11`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 4. Danger Zone */}
+            <section className="mt-20">
+              <div className="flex items-center gap-3 mb-4">
+                <AlertCircle size={18} className="text-red-500" />
+                <h3 className="text-xs font-black text-red-500/80 uppercase tracking-[0.3em]">Danger Zone</h3>
+              </div>
+              
+              <div className="p-8 bg-red-500/[0.03] border border-red-500/10 rounded-[2.5rem] flex flex-col sm:flex-row justify-between items-center gap-6">
+                <div className="text-center sm:text-left">
+                  <h4 className="text-sm font-bold text-red-400">Delete this workspace</h4>
+                  <p className="text-xs text-white/30 mt-1 max-w-xs">Once deleted, all teams, chats, and historical data will be removed permanently.</p>
+                </div>
+                <button className="px-6 py-3 rounded-2xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white transition-all text-[11px] font-black uppercase tracking-widest border border-red-500/20 shadow-lg shadow-red-500/5">
+                  <Trash2 size={14} className="inline mr-2" /> Delete Workspace
+                </button>
+              </div>
+            </section>
+
+            {/* Save Changes Floating Bar Effect */}
+            <div className="flex justify-end pt-8 border-t border-white/5">
               <button
                 onClick={handleSave}
-                className="flex items-center gap-2 bg-[rgba(88,40,201,0.4)] hover:bg-[rgba(88,40,201,0.6)] text-white px-6 py-2.5 rounded-xl transition shadow-lg border border-white/10"
+                className="flex items-center gap-3 bg-[#BE7EC7] hover:bg-[#a66bb0] text-white px-10 py-4 rounded-2xl transition-all font-black text-xs uppercase tracking-[0.2em] shadow-[0_10px_25px_rgba(190,126,199,0.3)] transform active:scale-95"
               >
-                <Save size={18} /> Save Changes
+                <Save size={18} /> Update Workspace Info
               </button>
             </div>
 
@@ -171,11 +247,13 @@ function GeneralInfoContent() {
   );
 }
 
-// 2. Main Component ที่ห่อหุ้มด้วย Suspense (ตัวนี้คือตัวที่ export default)
 export default function GeneralInfoPage() {
   return (
-    // Fallback จะแสดงระหว่างที่ Next.js กำลังโหลด URL Params
-    <Suspense fallback={<div className="p-10 text-white animate-pulse">Loading page...</div>}>
+    <Suspense fallback={
+        <div className="w-full h-screen bg-[#0F0C14] flex items-center justify-center">
+            <div className="animate-pulse text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">Initializing Command Center...</div>
+        </div>
+    }>
       <GeneralInfoContent />
     </Suspense>
   );

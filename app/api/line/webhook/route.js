@@ -4,9 +4,6 @@ import { prisma } from "@/lib/prisma";
 // 🔥 1. บังคับไม่ให้ Next.js ทำ Caching ในหน้านี้เด็ดขาด (สำคัญสำหรับ SSE)
 export const dynamic = "force-dynamic";
 
-// 🔥 2. ใช้ globalThis เพื่อป้องกันไม่ให้ clients หายไปตอน Hot Reload ในโหมด Dev
-// (หมายเหตุ: วิธีนี้ใช้ได้ผลดีถ้ารันบนเซิร์ฟเวอร์แบบ VPS / Custom Node Server
-// แต่ถ้า Deploy บน Vercel ต้องพิจารณาใช้ Redis Pub/Sub หรือ Pusher แทน)
 const globalClients = globalThis.sseClients || [];
 if (process.env.NODE_ENV !== "production") {
   globalThis.sseClients = globalClients;
@@ -24,44 +21,6 @@ function broadcast(data) {
   });
 }
 
-// =========================
-// 🔥 SSE (Realtime)
-// =========================
-/**
- * @swagger
- * /api/line/webhook:
- *   get:
- *     tags:
- *       - Webhooks
- *     summary: Subscribe to real-time chat updates via SSE
- *     description: Establish a Server-Sent Events (SSE) connection to receive real-time chat updates. Use query parameter stream=true to enable streaming.
- *     parameters:
- *       - name: stream
- *         in: query
- *         required: true
- *         schema:
- *           type: string
- *           enum: ["true"]
- *         description: Must be set to "true" to enable streaming
- *     responses:
- *       200:
- *         description: SSE stream established successfully
- *         headers:
- *           Content-Type:
- *             schema:
- *               type: string
- *               example: "text/event-stream"
- *           Cache-Control:
- *             schema:
- *               type: string
- *               example: "no-cache, no-transform"
- *           Connection:
- *             schema:
- *               type: string
- *               example: "keep-alive"
- *       404:
- *         description: Stream parameter not set to true
- */
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
 
@@ -101,81 +60,6 @@ export async function GET(req) {
   });
 }
 
-// =========================
-// 🔥 WEBHOOK (LINE)
-// =========================
-/**
- * @swagger
- * /api/line/webhook:
- *   post:
- *     tags:
- *       - Webhooks
- *     summary: LINE webhook endpoint
- *     description: Receive webhook events from LINE platform. Validates requests using LINE signature verification.
- *     security:
- *       - LineSignature: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               events:
- *                 type: array
- *                 description: Array of LINE events
- *                 items:
- *                   type: object
- *                   properties:
- *                     type:
- *                       type: string
- *                       enum: [message, follow, unfollow, join, leave, postback, beacon]
- *                       description: Event type
- *                     source:
- *                       type: object
- *                       properties:
- *                         userId:
- *                           type: string
- *                           description: LINE user ID
- *                     message:
- *                       type: object
- *                       properties:
- *                         type:
- *                           type: string
- *                           enum: [text, image, video, audio, file, location, template, flex]
- *                           description: Message type
- *                         text:
- *                           type: string
- *                           description: Message text (for text messages)
- *     responses:
- *       200:
- *         description: Webhook processed successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *       401:
- *         description: Invalid or missing LINE signature
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- */
 export async function POST(req) {
   try {
     const body = await req.text();

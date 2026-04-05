@@ -1,6 +1,6 @@
 "use client";
+import React from "react";
 
-//  รับ prop 'onOpenSendToBoard' เพิ่มเข้ามา
 export default function ControlPanel({ 
     onOpenAddTagModal, 
     onOpenContactDetails, 
@@ -10,67 +10,46 @@ export default function ControlPanel({
     onOpenSendToBoard 
 }) {
 
+    const actionButtons = [
+        { id: 'tags', icon: 'fa-tags', title: 'Tags', onClick: onOpenAddTagModal },
+        { id: 'profile', icon: 'fa-user', title: 'User Profile', onClick: onOpenContactDetails },
+        { id: 'notes', icon: 'fa-note-sticky', title: 'Notes', onClick: onOpenAddNote },
+        { id: 'status', icon: 'fa-arrows-rotate', title: 'Change Status', onClick: onOpenChangeStatus },
+        { id: 'activity', icon: 'fa-clock-rotate-left', title: 'Activity Log', onClick: onOpenActivityLog },
+        { id: 'board', icon: 'fa-file-export', title: 'Send to Board', onClick: onOpenSendToBoard },
+    ];
+
     return (
-        <div className="w-[65px] mt-3 ml-3">
-            <div className="w-full">
-                <div className="bg-[rgba(32,41,59,0.25)] border border-[rgba(254,253,253,0.5)] backdrop-blur-xl rounded-3xl shadow-2xl py-6 flex flex-col items-center gap-6">
-                    
-                    {/* Tags */}
-                    <button 
-                        onClick={onOpenAddTagModal} 
-                        className="group w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 transition-all duration-200 active:scale-90"
-                        title="Tags"
-                    >
-                        <i className="fa-solid fa-tags text-white/70 group-hover:text-white text-lg transition-colors"></i>
-                    </button>
+        // กำหนดความกว้างให้แคบลง (w-14 = 56px) และให้จัดเรียงอยู่ตรงกลางแนวตั้ง (justify-center)
+        <div className="w-14 shrink-0 flex flex-col justify-center h-full z-10">
+            
+            {/* ตัวกล่องแคปซูล */}
+            <div className="bg-[#1E1B29] border border-white/5 rounded-full shadow-2xl py-4 flex flex-col items-center gap-2 w-full">
+                
+                {actionButtons.map((btn) => (
+                    <div key={btn.id} className="relative group flex items-center justify-center w-full">
+                        
+                        {/* ปุ่มกด */}
+                        <button 
+                            onClick={btn.onClick} 
+                            className="w-10 h-10 flex items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all duration-200 active:scale-90"
+                        >
+                            <i className={`fa-solid ${btn.icon} text-[15px]`}></i>
+                        </button>
 
-                    {/* Profile */}
-                    <button 
-                        onClick={onOpenContactDetails} 
-                        className="group w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 transition-all duration-200 active:scale-90"
-                        title="User Profile"
-                    >
-                        <i className="fa-solid fa-info text-white/70 group-hover:text-white text-lg transition-colors"></i>
-                    </button>
-
-                    {/* Notes */}
-                    <button 
-                        onClick={onOpenAddNote}
-                        className="group w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 transition-all duration-200 active:scale-90"
-                        title="Notes"
-                    >
-                        <i className="fa-solid fa-book text-white/70 group-hover:text-white text-lg transition-colors"></i>
-                    </button>
-
-                    {/* Change Status */}
-                    <button 
-                        onClick={onOpenChangeStatus}
-                        className="group w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 transition-all duration-200 active:scale-90"
-                        title="Change Status"
-                    >
-                        <i className="fa-solid fa-timeline text-white/70 group-hover:text-white text-lg transition-colors"></i>
-                    </button>
-
-                    {/* Activity Log */}
-                    <button 
-                        onClick={onOpenActivityLog}
-                        className="group w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 transition-all duration-200 active:scale-90"
-                        title="Activity Log"
-                    >
-                        <i className="fa-solid fa-clock-rotate-left text-white/70 group-hover:text-white text-lg transition-colors"></i>
-                    </button>
-
-                    {/* Send to Board */}
-                    <button 
-                        onClick={onOpenSendToBoard}
-                        className="group w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 transition-all duration-200 active:scale-90"
-                        title="Send to Board"
-                    >
-                        <i className="fa-solid fa-file-import text-white text-lg transition-colors"></i>
-                    </button>
-                    
-                </div>
+                        {/* Custom Tooltip (สไลด์ออกมาทางซ้าย) */}
+                        <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1E1B29] border border-white/10 text-white/90 text-xs font-medium rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-x-2 group-hover:translate-x-0 transition-all duration-300 shadow-xl whitespace-nowrap pointer-events-none flex items-center">
+                            {btn.title}
+                            
+                            {/* ลูกศรชี้ของ Tooltip */}
+                            <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-[#1E1B29] border-t border-r border-white/10 rotate-45"></div>
+                        </div>
+                        
+                    </div>
+                ))}
+                
             </div>
+            
         </div>
     );
 }

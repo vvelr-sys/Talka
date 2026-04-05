@@ -71,95 +71,89 @@ function ChatPageContent() {
                 // Fallback: ใช้ข้อมูลว่างๆ เพื่อให้ UI แสดงได้
                 setChats([]);
             } finally {
-                setIsLoaded(true); // เปลี่ยนเป็น finally เพื่อให้ loop สิ้นสุด ไม่ว่า success หรือ error
+                setIsLoaded(true);
             }
         };
         loadData();
     }, []);
 
     // 🟢 SSE (Server-Sent Events) - Real-time Updates
-useEffect(() => {
-    if (!isLoaded) return;
+    useEffect(() => {
+        if (!isLoaded) return;
 
-    let eventSource;
-    const connectSSE = () => {
-        try {
-            eventSource = new EventSource('/api/line/webhook?stream=true');
+        let eventSource;
+        const connectSSE = () => {
+            try {
+                eventSource = new EventSource('/api/line/webhook?stream=true');
 
-            eventSource.addEventListener('message', (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    console.log('📨 SSE Message Received:', data);
-                    
-                    // 🛠️ แก้ตรงนี้: อัปเดต State ให้ครอบคลุมลูกค้าเก่าและใหม่
-                    setChats(prev => {
-                        // เช็คว่าห้องแชทนี้มีอยู่ในจอหรือยัง
-                        const isExistingChat = prev.some(chat => chat.id === data.chatId);
+                eventSource.addEventListener('message', (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        
+                        setChats(prev => {
+                            const isExistingChat = prev.some(chat => chat.id === data.chatId);
 
-                        if (isExistingChat) {
-                            // กรณีลูกค้าเก่า: อัปเดตข้อความต่อท้าย
-                            return prev.map(chat => {
-                                if (chat.id === data.chatId) {
-                                    return {
-                                        ...chat,
-                                        messages: [...(chat.messages || []), {
-                                            id: Date.now(),
-                                            from: data.from,
-                                            text: data.text,
-                                            time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
-                                            timestamp: new Date(data.timestamp)
-                                        }],
-                                        lastMessage: data.text
-                                    };
-                                }
-                                return chat;
-                            });
-                        } else {
-                            // กรณีลูกค้าใหม่: สร้างกล่องแชทใหม่แล้วดันไว้บนสุด
-                            const newChat = {
-                                id: data.chatId,
-                                // 🛠️ รับชื่อที่ส่งมาจาก Backend
-                                name: data.customerName || "LINE User", 
-                                platform: "LINE",
-                                status: "OPEN",
-                                messages: [{
-                                    id: Date.now(),
-                                    from: data.from,
-                                    text: data.text,
-                                    time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
-                                    timestamp: new Date(data.timestamp)
-                                }],
-                                lastMessage: data.text
-                            };
-                            return [newChat, ...prev];
-                        }
-                    });
+                            if (isExistingChat) {
+                                return prev.map(chat => {
+                                    if (chat.id === data.chatId) {
+                                        return {
+                                            ...chat,
+                                            messages: [...(chat.messages || []), {
+                                                id: Date.now(),
+                                                from: data.from,
+                                                text: data.text,
+                                                time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                                                timestamp: new Date(data.timestamp)
+                                            }],
+                                            lastMessage: data.text
+                                        };
+                                    }
+                                    return chat;
+                                });
+                            } else {
+                                const newChat = {
+                                    id: data.chatId,
+                                    name: data.customerName || "LINE User", 
+                                    platform: "LINE",
+                                    status: "OPEN",
+                                    messages: [{
+                                        id: Date.now(),
+                                        from: data.from,
+                                        text: data.text,
+                                        time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                                        timestamp: new Date(data.timestamp)
+                                    }],
+                                    lastMessage: data.text
+                                };
+                                return [newChat, ...prev];
+                            }
+                        });
 
-                } catch (error) {
-                    console.error('❌ Error parsing SSE data:', error);
-                }
-            });
+                    } catch (error) {
+                        console.error('❌ Error parsing SSE data:', error);
+                    }
+                });
 
-            eventSource.addEventListener('error', (error) => {
-                console.error('❌ SSE Connection Error:', error);
-                eventSource.close();
+                eventSource.addEventListener('error', (error) => {
+                    console.error('❌ SSE Connection Error:', error);
+                    eventSource.close();
+                    setTimeout(connectSSE, 3000);
+                });
+
+            } catch (error) {
+                console.error('❌ Failed to connect SSE:', error);
                 setTimeout(connectSSE, 3000);
-            });
+            }
+        };
 
-        } catch (error) {
-            console.error('❌ Failed to connect SSE:', error);
-            setTimeout(connectSSE, 3000);
-        }
-    };
+        connectSSE();
 
-    connectSSE();
-
-    return () => {
-        if (eventSource) {
-            eventSource.close();
-        }
-    };
-}, [isLoaded]);
+        return () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        };
+    }, [isLoaded]);
 
     useEffect(() => {
         const urlId = searchParams.get('id');
@@ -168,9 +162,6 @@ useEffect(() => {
             const targetChat = chats.find(c => c.id === idNum);
             if (targetChat) {
                 setSelectedChatId(idNum);
-                if (targetChat.status === 'OPEN' || targetChat.status === 'New Chat') {
-                    // Auto-assign or update if needed
-                }
             }
         }
     }, [searchParams, chats]);
@@ -191,7 +182,6 @@ useEffect(() => {
     const handleToggleTag = async (tagName) => {
         if (!selectedChat) return;
         addLog(selectedChat.id, 'tag', `Changed tag to "${tagName}"`);
-        // TODO: API call to update tags
     };
 
     const handleUpdateStatus = async (newStatus) => {
@@ -223,7 +213,6 @@ useEffect(() => {
         );
     };
 
-    // 🟢 Send Message to LINE - Main Function
     const handleSendMessage = async (chatId, text) => {
         if (!chatId || !text.trim()) return;
 
@@ -241,14 +230,12 @@ useEffect(() => {
 
             if (!response.ok) {
                 const error = await response.json();
-                console.error('❌ Failed to send message:', error);
                 alert('Failed to send message: ' + error.error);
                 return;
             }
 
             addLog(chatId, 'message', `Sent message`);
 
-            // Update local state immediately for better UX
             setChats(currentChats =>
                 currentChats.map(chat => {
                     if (chat.id === chatId) {
@@ -269,14 +256,11 @@ useEffect(() => {
                 })
             );
 
-            console.log('✅ Message sent successfully');
         } catch (error) {
-            console.error('❌ Error sending message:', error);
             alert('Error sending message: ' + error.message);
         }
     };
 
-    // Filter & Sort Logic
     const availableCompanies = useMemo(() => [...new Set(chats.map(c => c.company).filter(Boolean))], [chats]);
     const statusPriority = { "OPEN": 1, "PENDING": 2, "CLOSED": 3, "RESOLVED": 3 };
 
@@ -298,19 +282,31 @@ useEffect(() => {
     };
 
     if (!isLoaded) {
-        return <div className="text-white text-center mt-20 animate-pulse">Loading Chat Data...</div>;
+        return (
+            <div className="flex-1 flex h-full items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-4 border-[#BE7EC7]/30 border-t-[#BE7EC7] rounded-full animate-spin"></div>
+                    <div className="text-[#BE7EC7] text-sm font-medium">Loading Chat Data...</div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="h-screen w-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-            {/* Top Filter Bar */}
-            <div className="flex-shrink-0 p-4 border-b border-gray-700/50">
-                <ChatFitter onFilterChange={setActiveFilter} availableCompanies={availableCompanies} onCompanyChange={setActiveCompanyFilter} />
+        <div className="flex-1 flex flex-col h-full max-h-full overflow-hidden bg-transparent">
+            
+            <div className="flex-shrink-0 px-7 py-4 border-b border-white/5">
+                <ChatFitter 
+                    onFilterChange={setActiveFilter} 
+                    availableCompanies={availableCompanies} 
+                    onCompanyChange={setActiveCompanyFilter} 
+                />
             </div>
 
             {/* Main Chat Area */}
-            <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-                {/* Chat List */}
+            <div className="flex-1 flex gap-5 px-7 py-3 overflow-hidden">
+                
+                {/* 1. Chat List (ซ้าย) */}
                 <ChatList 
                     chats={filteredChats} 
                     onSelectChat={(chat) => setSelectedChatId(chat.id)} 
@@ -318,8 +314,8 @@ useEffect(() => {
                     availableTags={availableTags} 
                 />
 
-                {/* Chat Message & Panels */}
-                <div className="flex-1 flex gap-4 overflow-hidden">
+                {/* 2. Chat Message & Panels (ขวา) */}
+                <div className="flex-1 flex gap-5 overflow-hidden relative">
                     <ChatMessage 
                         chat={selectedChat} 
                         availableAgents={availableAgents} 
@@ -351,7 +347,11 @@ useEffect(() => {
                             onOpenSendToBoard={() => { closeAllPanels(); setIsSendToBoardOpen(true); }}
                         />
                     )}
-                    <AiSuppBtn onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)} isOpen={isAiAssistantOpen} />
+                    
+                    {/* AI Button ลอยอยู่มุมขวาล่าง */}
+                    <div className="absolute bottom-6 right-6 z-50">
+                        <AiSuppBtn onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)} isOpen={isAiAssistantOpen} />
+                    </div>
                     {isAiAssistantOpen && <AiAssistantPanel onClose={() => setIsAiAssistantOpen(false)} availableAgents={availableAgents} />}
                 </div>
             </div>
@@ -363,7 +363,15 @@ useEffect(() => {
 
 export default function ChatPage() {
     return (
-        <Suspense fallback={<div className="text-white text-center mt-20 animate-pulse">Loading Chat Data...</div>}>
+        <Suspense fallback={
+            // 🛠️ เปลี่ยน h-screen เป็น h-full
+            <div className="flex-1 flex h-full items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w- h-8 border-4 border-[#BE7EC7]/30 border-t-[#BE7EC7] rounded-full animate-spin"></div>
+                    <div className="text-[#BE7EC7] text-sm font-medium">Loading Chat Data...</div>
+                </div>
+            </div>
+        }>
             <ChatPageContent />
         </Suspense>
     );

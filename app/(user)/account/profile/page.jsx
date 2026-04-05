@@ -9,11 +9,16 @@ import {
   Activity,
   Loader2,
   ChevronDown,
+  ShieldCheck,
+  Check,
+  X,
+  Sparkles
 } from "lucide-react";
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // เพิ่ม State สำหรับ Modal
 
   const [username, setUsername] = useState("");
   const [status, setStatus] = useState("online");
@@ -109,8 +114,7 @@ export default function ProfilePage() {
       }
 
       window.dispatchEvent(new Event("user_updated"));
-      alert("Profile updated successfully!");
-      window.location.reload(); 
+      setShowSuccessModal(true); // เปลี่ยนจาก alert เป็นเปิด Modal
     } catch (error) {
       console.error("Error saving profile:", error);
       alert(`Failed to save profile: ${error.message}`);
@@ -121,191 +125,135 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center text-white/50 gap-2">
-        <Loader2 className="animate-spin" /> Loading Profile...
+      <div className="h-full flex flex-col items-center justify-center text-white/20 animate-pulse">
+        <Loader2 className="animate-spin mb-4" size={32} />
+        <p className="font-bold uppercase tracking-widest text-[10px]">Syncing Profile...</p>
       </div>
     );
   }
 
+  const inputClass = "w-full bg-[#1F192E] border border-white/5 focus:border-[#BE7EC7]/50 focus:bg-white/[0.04] outline-none rounded-xl py-3 px-4 text-white text-sm transition-all placeholder:text-white/10 shadow-inner";
+  const labelClass = "block text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-2 ml-1";
+
   return (
-    <div className="text-white flex items-center justify-center p-4 relative overflow-hidden h-full font-inter">
-      <div className="absolute top-0 left-0 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/10 rounded-full blur-[100px] translate-x-1/2 translate-y-1/2 pointer-events-none" />
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 h-full relative">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
 
-      <div className="w-full max-w-5xl backdrop-blur-2xl border border-white/10 rounded-3xl overflow-hidden flex flex-col md:flex-row bg-[#1e1e2e]/50 shadow-2xl relative z-10">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept="image/*"
-          className="hidden"
-        />
+      {/* SUCCESS MODAL */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-[#161223] border border-white/10 rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-[#BE7EC7] flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+              <Check className="text-white" size={40} strokeWidth={3} />
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight mb-2">Update Successful!</h2>
+            <p className="text-white/40 text-sm font-medium mb-8">
+              Your profile information has been securely updated and synced.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#BE7EC7] to-pink-600 text-white font-black text-xs uppercase tracking-[0.2em] shadow-lg hover:shadow-[#BE7EC7]/40 transition-all active:scale-95"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
 
-        <div className="md:w-1/3 bg-black/20 p-8 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/5 relative">
+      <div className="flex flex-col lg:flex-row gap-12 items-start h-full">
+        
+        {/* LEFT: Avatar Display Section */}
+        <div className="w-full lg:w-72 flex flex-col items-center shrink-0">
           <div className="relative group">
-            <div className="w-40 h-40 rounded-full p-1 bg-linear-to-tr from-purple-500 to-pink-500 mb-4 shadow-lg active:scale-95 transition-transform">
-              <div className="w-full h-full rounded-full overflow-hidden bg-neutral-800 relative flex items-center justify-center border-4 border-[#1a1f2e]">
+            <div className="w-44 h-44 rounded-full p-1 bg-gradient-to-tr from-[#BE7EC7] via-[#e0a6e8] to-pink-500 shadow-[0_0_40px_rgba(190,126,199,0.2)] transition-transform duration-500 group-hover:scale-105">
+              <div className="w-full h-full rounded-full overflow-hidden bg-[#161223] relative flex items-center justify-center border-[6px] border-[#161223]">
                 {avatar ? (
-                  <img
-                    src={avatar}
-                    alt="avatar"
-                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                  />
+                  <img src={avatar} alt="avatar" className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110" />
                 ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center text-5xl font-bold text-white/90"
-                    style={{ backgroundColor: stringToColor(username || "?") }}
-                  >
+                  <div className="w-full h-full flex items-center justify-center text-6xl font-black text-white/90" style={{ backgroundColor: stringToColor(username || "L") }}>
                     {getInitials(username)}
                   </div>
                 )}
 
-                <div
-                  className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-center p-4"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  <Camera className="w-8 h-8 text-white/80 mb-2" />
-                  <span className="text-xs text-white/70 font-medium">
-                    Change Photo
-                  </span>
+                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-center p-4 backdrop-blur-sm" onClick={() => fileInputRef.current.click()}>
+                  <Camera className="w-8 h-8 text-white/80 mb-1" />
+                  <span className="text-[10px] text-white font-bold uppercase">Change</span>
                 </div>
               </div>
             </div>
-
-            <div
-              className={`absolute bottom-6 right-2 w-6 h-6 border-4 border-[#1a1f2e] rounded-full shadow-md transition-colors duration-300
-                            ${status === "online" ? "bg-green-500" : status === "away" ? "bg-yellow-500" : "bg-neutral-500"}`}
-            ></div>
+            <div className={`absolute bottom-4 right-4 w-6 h-6 border-[4px] border-[#161223] rounded-full shadow-lg transition-colors duration-300 ${status === "online" ? "bg-emerald-500" : status === "away" ? "bg-amber-500" : "bg-zinc-500"}`}></div>
           </div>
 
-          <h2 className="text-xl font-bold mt-2 text-center truncate w-full">
-            {username}
-          </h2>
-          <p className="text-purple-400 text-xs font-semibold uppercase tracking-widest mb-1 bg-purple-500/10 px-3 py-1 rounded-full mt-2">
-            {role}
-          </p>
-          <p className="text-white/40 text-xs mb-6 truncate w-full text-center">
-            {email}
-          </p>
+          <div className="mt-6 text-center w-full">
+            <h2 className="text-2xl font-black text-white tracking-tight truncate px-4">{username}</h2>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 rounded-lg bg-[#BE7EC7]/10 border border-[#BE7EC7]/20">
+               <span className="text-[10px] font-black text-[#BE7EC7] uppercase tracking-widest">{role}</span>
+            </div>
+            <p className="text-white/20 text-[11px] mt-3 font-medium truncate px-4">{email}</p>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => fileInputRef.current.click()}
-            className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-medium hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2 active:scale-98"
-          >
-            <Camera size={16} /> Upload New Photo
+          <button onClick={() => fileInputRef.current.click()} className="mt-8 w-full py-2.5 rounded-xl bg-white/[0.03] border border-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest active:scale-95">
+            <Camera size={14} /> Upload New Photo
           </button>
-          <p className="text-white/20 text-[10px] mt-3">
-            Max size: 2MB (JPG, PNG)
-          </p>
         </div>
 
-        <div className="md:w-2/3 p-8 md:p-12 bg-black/5">
-          <div className="flex justify-between items-end mb-10 pb-6 border-b border-white/5">
+        {/* RIGHT: Form Section */}
+        <div className="flex-1 w-full space-y-10">
+          <div className="flex justify-between items-end pb-6 border-b border-white/5">
             <div>
-              <h1 className="text-3xl font-bold text-white">
-                Profile Settings
-              </h1>
-              <p className="text-white/40 text-sm mt-1">
-                Update your personal information and account status.
-              </p>
+              <h1 className="text-3xl font-black text-white tracking-tight">Profile Settings</h1>
+              <p className="text-white/30 text-sm font-medium mt-1">Update your personal information and account status.</p>
             </div>
-            <div className="hidden md:block p-3.5 bg-purple-500/10 rounded-2xl border border-purple-500/20 shadow-inner">
-              <User className="text-purple-400" size={24} />
+            <div className="hidden md:block p-3 bg-[#BE7EC7]/10 rounded-2xl border border-[#BE7EC7]/20 shadow-inner">
+              <ShieldCheck className="text-[#BE7EC7]" size={24} />
             </div>
           </div>
 
-          <form onSubmit={handleSave} className="space-y-8">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider ml-1">
-                Username / Full Name
-              </label>
-              <div className="relative group">
-                <User
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-purple-400 transition-colors"
-                  size={18}
-                />
-                <input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your name"
-                  required
-                  className="w-full rounded-xl pl-12 pr-4 py-3.5 bg-white/5 text-white placeholder-white/20 border border-white/10 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-white/30 uppercase tracking-wider ml-1">
-                Email Address (Read Only)
-              </label>
-              <div className="relative group opacity-60">
-                <Mail
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
-                  size={18}
-                />
-                <input
-                  type="email"
-                  value={email}
-                  readOnly
-                  disabled
-                  className="w-full rounded-xl pl-12 pr-4 py-3.5 bg-white/5 text-white/50 border border-white/5 cursor-not-allowed outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-wider ml-1">
-                Account Status
-              </label>
+          <form onSubmit={handleSave} className="space-y-6">
+            <div className="group">
+              <label className={labelClass}>Username / Full Name</label>
               <div className="relative">
-                <Activity
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
-                  size={18}
-                />
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full rounded-xl pl-12 pr-10 py-3.5 bg-white/5 text-white border border-white/10 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none appearance-none cursor-pointer hover:bg-white/10 transition-colors"
-                >
-                  <option value="online" className="bg-[#1e1e2e] py-2">
-                    🟢 &nbsp; Online
-                  </option>
-                  <option value="away" className="bg-[#1e1e2e] py-2">
-                    🟡 &nbsp; Away
-                  </option>
-                  <option value="offline" className="bg-[#1e1e2e] py-2">
-                    ⚫ &nbsp; Offline
-                  </option>
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#BE7EC7] transition-colors" size={18} />
+                <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your name" required className={`${inputClass} pl-12`} />
+              </div>
+            </div>
+
+            <div className="opacity-60">
+              <label className={labelClass}>Email Address (Read Only)</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10" size={18} />
+                <input type="email" value={email} readOnly disabled className={`${inputClass} pl-12 cursor-not-allowed`} />
+              </div>
+            </div>
+
+            <div className="group">
+              <label className={labelClass}>Account Status</label>
+              <div className="relative">
+                <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#BE7EC7] transition-colors" size={18} />
+                <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${inputClass} pl-12 appearance-none cursor-pointer`}>
+                  <option value="online" className="bg-[#1F192E]">🟢 &nbsp; Online</option>
+                  <option value="away" className="bg-[#1F192E]">🟡 &nbsp; Away</option>
+                  <option value="offline" className="bg-[#1F192E]">⚫ &nbsp; Offline</option>
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/30">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">
                   <ChevronDown size={18} />
                 </div>
               </div>
             </div>
 
-            <div className="pt-8 mt-4 border-t border-white/5 flex items-center justify-end gap-4">
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="text-sm font-medium text-white/50 hover:text-white transition-colors px-5 py-2.5 rounded-xl hover:bg-white/5"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="flex items-center gap-2.5 rounded-xl px-10 py-3.5 bg-linear-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg shadow-purple-600/20 hover:shadow-purple-600/40 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
+            <div className="pt-10 flex flex-col sm:flex-row items-center justify-end gap-6 border-t border-white/5">
+              <button type="button" onClick={() => window.location.reload()} className="text-xs font-black uppercase tracking-widest text-white/20 hover:text-white/60 transition-colors">Cancel</button>
+              <button type="submit" disabled={isSaving} className="w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-4 rounded-2xl bg-gradient-to-r from-[#BE7EC7] to-pink-600 text-white font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-[#BE7EC7]/20 hover:shadow-[#BE7EC7]/40 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 {isSaving ? (
-                  <>
-                    <Loader2 className="animate-spin" size={18} />
-                    Saving...
-                  </>
+                  <><Loader2 className="animate-spin" size={16} /> Saving...</>
                 ) : (
-                  <>
-                    <Save size={18} /> Save Changes
-                  </>
+                  <><Check size={16} /> Save Changes</>
                 )}
               </button>
             </div>

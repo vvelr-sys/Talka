@@ -1,31 +1,28 @@
 "use client";
 
-// Imports
-import { useState, useEffect, useMemo, Suspense } from "react"; 
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
+// ส่วนประกอบ UI ต่างๆ
 import ChatList from "@/app/components/Chat/ChatList.jsx";
 import ChatMessage from '@/app/components/Chat/ChatMessage.jsx';
 import ChatFitter from "@/app/components/Chat/ChatFitter";
 import ControlPanel from "@/app/components/Actions/ControlPanel";
 import AddTag from "@/app/components/Actions/AddTag";
-import ContactDetails from "@/app/components/Chat/ChatContactDetail"; 
+import ContactDetails from "@/app/components/Chat/ChatContactDetail";
 import AddNote from "@/app/components/Actions/AddNote";
 import AiSuppBtn from "@/app/components/AI/AiSuppBtn";
-import ChangeStatus from "@/app/components/Actions/Changestatus"; 
+import ChangeStatus from "@/app/components/Actions/Changestatus";
 import AiAssistantPanel from "@/app/components/AI/AiAssistantPanel";
 import ActivityLogPanel from "@/app/components/Actions/ActivityLogPanel";
+import SendToBoardModal from "@/app/components/Modals/SendToBoardModal";
 
 import "@/app/assets/css/other.css";
 
-// 🟢 [BACKEND NOTE]: ลบการ Import MockData เหล่านี้ออกเมื่อเปลี่ยนไปดึงข้อมูลจาก API จริง
-import { unifiedMockData } from '@/app/data/mockData';
 import { DEFAULT_TAGS } from "@/app/data/defaultTags";
 import { DEFAULT_AI_PROMPTS } from "@/app/data/defaultPrompts";
 
-//Constants & Config
-const CHANNEL_FILTER = "Line"; 
-const ALL_AVAILABLE_STATUS = ["New Chat", "Open", "Pending", "Closed"];
+const ALL_AVAILABLE_STATUS = ["OPEN", "PENDING", "CLOSED", "RESOLVED"];
 
 const DEFAULT_AI_AGENTS = [
     { id: 'receptionist', name: 'Receptionist', emoji: '🛎️', role: 'Front Desk' },
@@ -33,329 +30,349 @@ const DEFAULT_AI_AGENTS = [
     { id: 'support', name: 'Support Agent', emoji: '❤️', role: 'Support' },
 ];
 
-const processInitialData = (data) => {
-    return data.map(chat => ({
-        ...chat,
-        email: chat.email || null,
-        country: chat.country || null,
-        tags: Array.isArray(chat.tags) ? chat.tags : (chat.tags ? [chat.tags] : []),
-        notes: Array.isArray(chat.notes) ? chat.notes : [],
-        status: chat.status || "New Chat",
-        openTime: chat.time,
-        messages: (chat.messages || []).filter(msg => msg.from !== 'me')
-    }));
-};
-
-// ==================================================================================
-// Component ย่อย: เก็บ Logic การทำงานทั้งหมด (แยกออกมาเพื่อให้ใช้ Suspense ได้)
-// ==================================================================================
-function LineChatContent() {
+function ChatPageContent() {
     const searchParams = useSearchParams();
-    
-    // States
-    // 🟢 [BACKEND NOTE]: เปลี่ยนค่าเริ่มต้นจาก processInitialData(unifiedMockData) เป็น [] (อาเรย์ว่าง) เพื่อรอรับจาก API
-    const [chats, setChats] = useState(() => processInitialData(unifiedMockData));
+
+    const [chats, setChats] = useState([]);
     const [selectedChatId, setSelectedChatId] = useState(null);
     const selectedChat = chats.find(chat => chat.id === selectedChatId);
     
-    // 🟢 [BACKEND NOTE]: เริ่มต้นที่ false เมื่อมี API เพื่อให้โชว์ Loading ระหว่างดึงข้อมูล
-    const [isLoaded, setIsLoaded] = useState(true); 
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Panels 
+    // State สำหรับ UI Modals
     const [isAddTagModalOpen, setIsAddTagModalOpen] = useState(false);
     const [isContactDetailsOpen, setIsContactDetailsOpen] = useState(false);
     const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
     const [isChangeStatusOpen, setIsChangeStatusOpen] = useState(false);
     const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
     const [isActivityLogOpen, setIsActivityLogOpen] = useState(false);
+    const [isSendToBoardOpen, setIsSendToBoardOpen] = useState(false);
 
-    // Filters & Data
     const [activeFilter, setActiveFilter] = useState("All");
     const [activeCompanyFilter, setActiveCompanyFilter] = useState(null);
-    const [activityLogs, setActivityLogs] = useState([]); 
     
-    // 🟢 [BACKEND NOTE]: ข้อมูลเหล่านี้ควร fetch มาจาก Database ของระบบ (เช่น GET /tags, GET /prompts)
+    const [currentUser, setCurrentUser] = useState({ name: "Admin", role: "Admin", avatar: "A" });
+
+    const [activityLogs, setActivityLogs] = useState([]);
     const [activePrompts, setActivePrompts] = useState(DEFAULT_AI_PROMPTS.filter(p => p.active === true));
     const [availableAgents, setAvailableAgents] = useState(DEFAULT_AI_AGENTS);
     const [availableTags, setAvailableTags] = useState(DEFAULT_TAGS);
-    
-    // 🟢 [BACKEND NOTE]: ดึงข้อมูลผู้ใช้จาก Token หรือ API /me 
-    const [currentUser, setCurrentUser] = useState({ name: "Admin", role: "Owner", avatar: "A" });
 
-    // 🟢 [BACKEND NOTE]: ใช้ useEffect ตัวเดียวสำหรับดึงข้อมูลทั้งหมดเมื่อเข้าหน้าเว็บ
-    /*
+    // 🟢 Fetch Initial Data from API
     useEffect(() => {
-        const fetchAllData = async () => {
+        const loadData = async () => {
             try {
-                // ตัวอย่าง: const resChats = await fetch('/api/chats?channel=Line');
-                // const chatData = await resChats.json();
-                // setChats(processInitialData(chatData));
+                const res = await fetch('/api/line/chat-sessions');
+                if (!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                setChats(Array.isArray(data) ? data : []);
+            } catch (error) {
+                console.error('❌ Failed to load chats:', error);
+                // Fallback: ใช้ข้อมูลว่างๆ เพื่อให้ UI แสดงได้
+                setChats([]);
+            } finally {
                 setIsLoaded(true);
-            } catch (err) { console.error(err); }
-        }
-        fetchAllData();
+            }
+        };
+        loadData();
     }, []);
-    */
+
+    // 🟢 SSE (Server-Sent Events) - Real-time Updates
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        let eventSource;
+        const connectSSE = () => {
+            try {
+                eventSource = new EventSource('/api/line/webhook?stream=true');
+
+                eventSource.addEventListener('message', (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        
+                        setChats(prev => {
+                            const isExistingChat = prev.some(chat => chat.id === data.chatId);
+
+                            if (isExistingChat) {
+                                return prev.map(chat => {
+                                    if (chat.id === data.chatId) {
+                                        return {
+                                            ...chat,
+                                            messages: [...(chat.messages || []), {
+                                                id: Date.now(),
+                                                from: data.from,
+                                                text: data.text,
+                                                time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                                                timestamp: new Date(data.timestamp)
+                                            }],
+                                            lastMessage: data.text
+                                        };
+                                    }
+                                    return chat;
+                                });
+                            } else {
+                                const newChat = {
+                                    id: data.chatId,
+                                    name: data.customerName || "LINE User", 
+                                    platform: "LINE",
+                                    status: "OPEN",
+                                    messages: [{
+                                        id: Date.now(),
+                                        from: data.from,
+                                        text: data.text,
+                                        time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                                        timestamp: new Date(data.timestamp)
+                                    }],
+                                    lastMessage: data.text
+                                };
+                                return [newChat, ...prev];
+                            }
+                        });
+
+                    } catch (error) {
+                        console.error('❌ Error parsing SSE data:', error);
+                    }
+                });
+
+                eventSource.addEventListener('error', (error) => {
+                    console.error('❌ SSE Connection Error:', error);
+                    eventSource.close();
+                    setTimeout(connectSSE, 3000);
+                });
+
+            } catch (error) {
+                console.error('❌ Failed to connect SSE:', error);
+                setTimeout(connectSSE, 3000);
+            }
+        };
+
+        connectSSE();
+
+        return () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        };
+    }, [isLoaded]);
 
     useEffect(() => {
-        if (isLoaded) {
-            const urlId = searchParams.get('id');
-            if (urlId) {
-                const idNum = parseInt(urlId);
-                const targetChat = chats.find(c => c.id === idNum);
-            
-                if (targetChat) {
-                    setSelectedChatId(idNum);
-
-                    if (targetChat.status === 'New Chat') {
-                        // เปลี่ยนสถานะเป็น Open ทันทีที่กดเปิดแชทใหม่
-                        handleUpdateStatus('Open');
-                    }
-                }
+        const urlId = searchParams.get('id');
+        if (urlId) {
+            const idNum = parseInt(urlId);
+            const targetChat = chats.find(c => c.id === idNum);
+            if (targetChat) {
+                setSelectedChatId(idNum);
             }
         }
-    }, [searchParams, isLoaded, chats]);
-
+    }, [searchParams, chats]);
 
     const addLog = (chatId, type, detail) => {
         if (!chatId) return;
         const newLog = {
             id: Date.now() + Math.random(),
-            chatId, type, detail, 
+            chatId,
+            type,
+            detail,
             timestamp: new Date().toISOString(),
             by: currentUser.name
         };
-        // 🟢 [BACKEND NOTE]: ควรยิง POST ไปเซฟ Log ที่ Backend ด้วย
         setActivityLogs(prev => [...prev, newLog]);
     };
+
+    const handleToggleTag = async (tagName) => {
+        if (!selectedChat) return;
+        addLog(selectedChat.id, 'tag', `Changed tag to "${tagName}"`);
+    };
+
+    const handleUpdateStatus = async (newStatus) => {
+        if (!selectedChat) return;
+        addLog(selectedChat.id, 'status', `Changed status from "${selectedChat.status}" to "${newStatus}"`);
+        setChats(currentChats =>
+            currentChats.map(chat =>
+                chat.id === selectedChat.id ? { ...chat, status: newStatus } : chat
+            )
+        );
+    };
+
+    const handleUpdateContactInfo = async (contactId, updatedInfo) => {
+        addLog(contactId, 'contact', `Updated information`);
+        setChats(currentChats =>
+            currentChats.map(chat =>
+                chat.id === contactId ? { ...chat, ...updatedInfo } : chat
+            )
+        );
+    };
+
+    const handleAddNote = async (noteData) => {
+        if (!selectedChatId) return;
+        addLog(selectedChatId, 'note', `Added note: "${noteData.title}"`);
+        setChats(currentChats =>
+            currentChats.map(chat =>
+                chat.id === selectedChatId ? { ...chat, notes: [...(chat.notes || []), noteData] } : chat
+            )
+        );
+    };
+
+    const handleSendMessage = async (chatId, text) => {
+        if (!chatId || !text.trim()) return;
+
+        try {
+            const response = await fetch('/api/line/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_session_id: chatId,
+                    text: text.trim(),
+                }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                alert('Failed to send message: ' + error.error);
+                return;
+            }
+
+            addLog(chatId, 'message', `Sent message`);
+
+            setChats(currentChats =>
+                currentChats.map(chat => {
+                    if (chat.id === chatId) {
+                        const newMessage = {
+                            id: Date.now(),
+                            from: "AGENT",
+                            text: text,
+                            time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                            timestamp: new Date()
+                        };
+                        return {
+                            ...chat,
+                            messages: [...chat.messages, newMessage],
+                            lastMessage: text,
+                        };
+                    }
+                    return chat;
+                })
+            );
+
+        } catch (error) {
+            alert('Error sending message: ' + error.message);
+        }
+    };
+
+    const availableCompanies = useMemo(() => [...new Set(chats.map(c => c.company).filter(Boolean))], [chats]);
+    const statusPriority = { "OPEN": 1, "PENDING": 2, "CLOSED": 3, "RESOLVED": 3 };
+
+    const filteredChats = chats
+        .filter(chat => {
+            const statusMatch = activeFilter === "All" || chat.status === activeFilter;
+            const companyMatch = !activeCompanyFilter || chat.company === activeCompanyFilter;
+            return statusMatch && companyMatch;
+        })
+        .sort((a, b) => (statusPriority[a.status] || 2) - (statusPriority[b.status] || 2));
 
     const closeAllPanels = () => {
         setIsAddTagModalOpen(false);
         setIsContactDetailsOpen(false);
         setIsAddNoteOpen(false);
         setIsChangeStatusOpen(false);
-        setIsActivityLogOpen(false); 
+        setIsActivityLogOpen(false);
+        setIsSendToBoardOpen(false);
     };
 
-    // Open/Close Modals
-    const handleOpenTagModal = () => { if(selectedChatId) { closeAllPanels(); setIsAddTagModalOpen(true); } else alert("Select a chat first."); };
-    const handleCloseTagModal = () => setIsAddTagModalOpen(false);
-
-    const handleOpenContactDetails = () => { if(selectedChatId) { closeAllPanels(); setIsContactDetailsOpen(true); } else alert("Select a chat first."); };
-    const handleCloseContactDetails = () => setIsContactDetailsOpen(false);
-
-    const handleOpenAddNote = () => { if(selectedChatId) { closeAllPanels(); setIsAddNoteOpen(true); } else alert("Select a chat first."); };
-    const handleCloseAddNote = () => setIsAddNoteOpen(false);
-
-    const handleOpenChangeStatus = () => { if(selectedChatId) { closeAllPanels(); setIsChangeStatusOpen(true); } else alert("Select a chat first."); };
-    const handleCloseChangeStatus = () => setIsChangeStatusOpen(false);
-
-    const handleOpenActivityLog = () => { if(selectedChatId) { closeAllPanels(); setIsActivityLogOpen(true); } else alert("Select a chat first."); };
-    const handleCloseActivityLog = () => setIsActivityLogOpen(false);
-
-
-    // ==========================================================
-    // 🟢 [BACKEND NOTE]: เปลี่ยนฟังก์ชันด้านล่างนี้ให้เป็น async/await เพื่อยิง API
-    // ==========================================================
-    const handleToggleTag = async (tagName) => {
-        if (!selectedChat) return;
-        // 🟢 [BACKEND NOTE]: await fetch(`/api/chats/${selectedChat.id}/tags`, { method: 'PATCH', ... });
-        
-        setChats(prev => prev.map(chat => {
-            if (chat.id === selectedChat.id) {
-                const currentTags = Array.isArray(chat.tags) ? chat.tags : [];
-                const isSelected = currentTags.includes(tagName);
-                addLog(chat.id, 'tag', isSelected ? `Removed tag "${tagName}"` : `Changed tag to "${tagName}"`);
-                const newTags = isSelected ? [] : [tagName];
-                return { ...chat, tags: newTags }; 
-            }
-            return chat; 
-        }));
-    };
-
-    const handleUpdateStatus = async (newStatus) => {
-        if (!selectedChat) return;
-        // 🟢 [BACKEND NOTE]: await fetch(`/api/chats/${selectedChat.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) });
-        
-        if (selectedChat.status !== newStatus) addLog(selectedChat.id, 'status', `Changed status to "${newStatus}"`);
-        setChats(prev => prev.map(c => c.id === selectedChat.id ? { ...c, status: newStatus } : c));
-    };
-
-    const handleUpdateContactInfo = async (contactId, info) => {
-        const key = Object.keys(info)[0];
-        // 🟢 [BACKEND NOTE]: await fetch(`/api/contacts/${contactId}`, { method: 'PUT', body: JSON.stringify(info) });
-        
-        addLog(contactId, 'contact', `Updated ${key} to "${info[key]}"`);
-        setChats(prev => prev.map(c => c.id === contactId ? { ...c, ...info } : c));
-    };
-
-    const handleAddNote = async (noteData) => {
-        if (!selectedChatId) return;
-        // 🟢 [BACKEND NOTE]: await fetch(`/api/chats/${selectedChatId}/notes`, { method: 'POST', body: JSON.stringify(noteData) });
-        
-        addLog(selectedChatId, 'note', `Added note: "${noteData.title}"`);
-        setChats(prev => prev.map(c => {
-            if (c.id === selectedChatId) {
-                const currentNotes = Array.isArray(c.notes) ? c.notes : [];
-                return { ...c, notes: [...currentNotes, noteData] };
-            }
-            return c;
-        }));
-    };
-
-    const handleDeleteNote = async (noteId) => {
-        if (!selectedChatId) return;
-        // 🟢 [BACKEND NOTE]: await fetch(`/api/notes/${noteId}`, { method: 'DELETE' });
-        
-        addLog(selectedChatId, 'note', `Deleted a note`);
-        setChats(prev => prev.map(c => 
-            c.id === selectedChatId ? { ...c, notes: c.notes.filter(n => n.id !== noteId) } : c
-        ));
-    };
-
-    const handleSendMessage = async (chatId, text) => {
-        if (!chatId || !text.trim()) return;
-        // 🟢 [BACKEND NOTE]: await fetch(`/api/chats/${chatId}/messages`, { method: 'POST', body: JSON.stringify({ text }) });
-        
-        addLog(chatId, 'message', `Sent message: "${text.substring(0, 20)}..."`);
-        setChats(prev => prev.map(c => {
-            if (c.id === chatId) {
-                const newMsg = { from: "me", text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-                return { ...c, messages: [...(c.messages || []), newMsg], message: text, time: newMsg.time };
-            }
-            return c;
-        }));
-    };
-
-    const handleSelectAiAgent = async (chatId, agent) => {
-        if (!chatId) return;
-        // 🟢 [BACKEND NOTE]: อัปเดต AI Agent ใน Database ถ้าจำเป็น
-        setChats(prev => prev.map(c => c.id === chatId ? { ...c, activeAiAgent: agent, isAiMode: !!agent } : c));
-    };
-
-    const handleSelectChat = (chat) => {
-        if (selectedChatId === chat.id) { setSelectedChatId(null); closeAllPanels(); }
-        else { setSelectedChatId(chat.id); }
-    };
-
-
-    //  Filtering & Sorting
-    const availableCompanies = useMemo(() => [...new Set(chats.map(c => c.company).filter(Boolean))], [chats]);
-
-    // Filter by Channel (Line)
-    const channelFilteredChats = chats.filter(chat => chat.channel === CHANNEL_FILTER);
-
-    // Filter by Status & Company
-    const finalFilteredChats = channelFilteredChats
-        .filter(chat => {
-            const statusMatch = activeFilter === "All" || chat.status === activeFilter;
-            const companyMatch = !activeCompanyFilter || chat.company === activeCompanyFilter;
-            return statusMatch && companyMatch; 
-        })
-        .sort((a, b) => {
-            const statusPriority = { "New Chat": 1, "Open": 2, "Pending": 2, "Closed": 3 };
-            return (statusPriority[a.status] || 2) - (statusPriority[b.status] || 2);
-        });
-
-    if (!isLoaded) return <div className="text-white text-center mt-20 animate-pulse">Loading...</div>;
-
-    // ==========================================================
-    // UI ส่วนล่างนี้ไม่มีการดัดแปลงใดๆ โครงสร้าง Component ยังอยู่ครบ
-    // ==========================================================
-    return (
-        <div className="container mx-auto ">
-            
-            <ChatFitter 
-                onFilterChange={setActiveFilter} 
-                availableCompanies={availableCompanies}
-                onCompanyChange={setActiveCompanyFilter}
-            />
-
-            <div className="flex">
-                <ChatList 
-                    chats={finalFilteredChats} 
-                    onSelectChat={handleSelectChat}
-                    selectedId={selectedChatId} 
-                    availableTags={availableTags}
-                />
-
-                <ChatMessage 
-                    chat={selectedChat}
-                    availableAgents={availableAgents} 
-                    onSelectAiAgent={handleSelectAiAgent}
-                    aiPrompts={activePrompts} 
-                    currentUser={currentUser}
-                    onSendMessage={handleSendMessage}
-                    availableTags={availableTags}
-                />
-                
-                {/* Panels */}
-                {isAddTagModalOpen && 
-                    <AddTag 
-                        onClose={handleCloseTagModal} 
-                        availableTags={availableTags} 
-                        currentTargets={selectedChat ? selectedChat.tags : []} 
-                        onToggleTag={handleToggleTag} 
-                    />
-                }
-
-                {isContactDetailsOpen && 
-                    <ContactDetails 
-                        onClose={handleCloseContactDetails} 
-                        contact={selectedChat} 
-                        onUpdateContact={handleUpdateContactInfo} 
-                    />
-                }
-
-                {isAddNoteOpen && 
-                    <AddNote 
-                        onClose={handleCloseAddNote} 
-                        onSaveNote={handleAddNote} 
-                        currentNotes={selectedChat ? selectedChat.notes : []} 
-                        onDeleteNote={handleDeleteNote} 
-                    />
-                }
-
-                {isChangeStatusOpen && 
-                    <ChangeStatus 
-                        onClose={handleCloseChangeStatus} 
-                        availableStatus={ALL_AVAILABLE_STATUS} 
-                        currentTargets={selectedChat?.status ? [selectedChat.status] : []} 
-                        onToggleStatus={handleUpdateStatus} 
-                    />
-                }
-
-                {isActivityLogOpen && 
-                    <ActivityLogPanel 
-                        onClose={handleCloseActivityLog} 
-                        logs={activityLogs.filter(log => log.chatId === selectedChatId)} 
-                    />
-                }
-                
-                {selectedChatId && (
-                    <ControlPanel 
-                        onOpenAddTagModal={handleOpenTagModal} 
-                        onOpenContactDetails={handleOpenContactDetails} 
-                        onOpenAddNote={handleOpenAddNote} 
-                        onOpenChangeStatus={handleOpenChangeStatus}
-                        onOpenActivityLog={handleOpenActivityLog}
-                    />
-                )}
-
-                {isAiAssistantOpen && <AiAssistantPanel onClose={() => setIsAiAssistantOpen(false)} availableAgents={availableAgents} />}
-                <AiSuppBtn onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)} isOpen={isAiAssistantOpen} />
+    if (!isLoaded) {
+        return (
+            <div className="flex-1 flex h-full items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-4 border-[#BE7EC7]/30 border-t-[#BE7EC7] rounded-full animate-spin"></div>
+                    <div className="text-[#BE7EC7] text-sm font-medium">Loading Chat Data...</div>
+                </div>
             </div>
+        );
+    }
+
+    return (
+        <div className="flex-1 flex flex-col h-full max-h-full overflow-hidden bg-transparent">
+            
+            <div className="flex-shrink-0 px-7 py-4 border-b border-white/5">
+                <ChatFitter 
+                    onFilterChange={setActiveFilter} 
+                    availableCompanies={availableCompanies} 
+                    onCompanyChange={setActiveCompanyFilter} 
+                />
+            </div>
+
+            {/* Main Chat Area */}
+            <div className="flex-1 flex gap-5 px-7 py-3 overflow-hidden">
+                
+                {/* 1. Chat List (ซ้าย) */}
+                <ChatList 
+                    chats={filteredChats} 
+                    onSelectChat={(chat) => setSelectedChatId(chat.id)} 
+                    selectedId={selectedChatId} 
+                    availableTags={availableTags} 
+                />
+
+                {/* 2. Chat Message & Panels (ขวา) */}
+                <div className="flex-1 flex gap-5 overflow-hidden relative">
+                    <ChatMessage 
+                        chat={selectedChat} 
+                        availableAgents={availableAgents} 
+                        onSelectAiAgent={(id, agent) => {
+                            setChats(prev => prev.map(c => c.id === id ? { ...c, activeAiAgent: agent, isAiMode: !!agent } : c));
+                        }} 
+                        aiPrompts={activePrompts} 
+                        currentUser={currentUser} 
+                        onSendMessage={handleSendMessage} 
+                        availableTags={availableTags} 
+                    />
+                    
+                    {/* Right Side Panels */}
+                    {isAddTagModalOpen && <AddTag onClose={() => setIsAddTagModalOpen(false)} availableTags={availableTags} currentTargets={selectedChat?.tags || []} onToggleTag={handleToggleTag} />}
+                    {isContactDetailsOpen && <ContactDetails onClose={() => setIsContactDetailsOpen(false)} contact={selectedChat} onUpdateContact={handleUpdateContactInfo} />}
+                    {isAddNoteOpen && <AddNote onClose={() => setIsAddNoteOpen(false)} onSaveNote={handleAddNote} currentNotes={selectedChat?.notes || []} onDeleteNote={(id) => {
+                        setChats(prev => prev.map(c => c.id === selectedChatId ? { ...c, notes: c.notes.filter(n => n.id !== id) } : c));
+                    }} />}
+                    {isChangeStatusOpen && <ChangeStatus onClose={() => setIsChangeStatusOpen(false)} availableStatus={ALL_AVAILABLE_STATUS} currentTargets={selectedChat?.status ? [selectedChat.status] : []} onToggleStatus={handleUpdateStatus} />}
+                    {isActivityLogOpen && <ActivityLogPanel onClose={() => setIsActivityLogOpen(false)} logs={activityLogs.filter(log => log.chatId === selectedChatId)} />}
+                    
+                    {selectedChatId && (
+                        <ControlPanel 
+                            onOpenAddTagModal={() => { closeAllPanels(); setIsAddTagModalOpen(true); }}
+                            onOpenContactDetails={() => { closeAllPanels(); setIsContactDetailsOpen(true); }}
+                            onOpenAddNote={() => { closeAllPanels(); setIsAddNoteOpen(true); }}
+                            onOpenChangeStatus={() => { closeAllPanels(); setIsChangeStatusOpen(true); }}
+                            onOpenActivityLog={() => { closeAllPanels(); setIsActivityLogOpen(true); }}
+                            onOpenSendToBoard={() => { closeAllPanels(); setIsSendToBoardOpen(true); }}
+                        />
+                    )}
+                    
+                    {/* AI Button ลอยอยู่มุมขวาล่าง */}
+                    <div className="absolute bottom-6 right-6 z-50">
+                        <AiSuppBtn onClick={() => setIsAiAssistantOpen(!isAiAssistantOpen)} isOpen={isAiAssistantOpen} />
+                    </div>
+                    {isAiAssistantOpen && <AiAssistantPanel onClose={() => setIsAiAssistantOpen(false)} availableAgents={availableAgents} />}
+                </div>
+            </div>
+
+            {isSendToBoardOpen && selectedChat && <SendToBoardModal onClose={() => setIsSendToBoardOpen(false)} chat={selectedChat} />}
         </div>
     );
 }
 
-// ==================================================================================
-// 3. Main Export (ครอบด้วย Suspense)
-// ==================================================================================
-export default function LineChatPage() {
+export default function ChatPage() {
     return (
-        <Suspense fallback={<div className="text-white text-center mt-20 animate-pulse">Loading Chat...</div>}>
-            <LineChatContent />
+        <Suspense fallback={
+            // 🛠️ เปลี่ยน h-screen เป็น h-full
+            <div className="flex-1 flex h-full items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w- h-8 border-4 border-[#BE7EC7]/30 border-t-[#BE7EC7] rounded-full animate-spin"></div>
+                    <div className="text-[#BE7EC7] text-sm font-medium">Loading Chat Data...</div>
+                </div>
+            </div>
+        }>
+            <ChatPageContent />
         </Suspense>
     );
 }

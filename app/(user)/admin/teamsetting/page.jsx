@@ -1,453 +1,316 @@
 "use client";
-import { Info, X, Trash2, Edit, UsersRound } from "lucide-react";
+import { Info, X, Trash2, Edit, UsersRound, Search, Plus, Check, Settings2, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 
+// Modal สำหรับสร้าง/แก้ไขทีม
 function TeamModal({
-  isOpen,
-  title,
-  onClose,
-  onConfirm,
-  teamName,
-  setTeamName,
-  teamDesc,
-  setTeamDesc,
-  teamMembers,
-  setTeamMembers,
-  userOptions,
-  platforms,
-  setPlatforms
+    isOpen, title, onClose, onConfirm, teamName, setTeamName, teamDesc, setTeamDesc,
+    teamMembers, setTeamMembers, userOptions, platforms, setPlatforms
 }) {
-  if (!isOpen) return null;
+    if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
-      <div className="relative bg-[#12131a] text-white w-[550px] rounded-2xl border border-white/20 shadow-2xl p-6 md:p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer">
-          <X size={22} />
-        </button>
+    const inputClass = "w-full bg-white/[0.03] border border-white/10 focus:border-[#BE7EC7]/50 focus:bg-white/[0.08] outline-none rounded-xl py-2.5 px-4 text-white text-sm transition-all placeholder:text-white/20";
+    const labelClass = "block text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1.5 ml-1";
 
-        <div className="flex items-center gap-2 mb-6">
-          <h2 className="text-2xl font-semibold">{title}</h2>
-          <Info size={18} className="text-gray-400" />
-        </div>
-        <hr className="border-white/20 mb-6" />
+    return (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-[100] p-4">
+            <div className="relative bg-[#161223] text-white w-full max-w-[550px] rounded-[2.5rem] border border-white/5 shadow-2xl p-8 max-h-[90vh] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-300">
+                
+                <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 text-white/30 hover:text-white transition-all">
+                    <X size={20} />
+                </button>
 
-        {/* Team Name */}
-        <div className="mb-5">
-          <label className="block text-sm mb-2">Team Name</label>
-          <input
-            type="text"
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            placeholder="Team name Ex. Support Team A"
-            className="w-full bg-[#1c1d25] border border-white/30 rounded-lg px-3 py-2 outline-none text-white"
-          />
-        </div>
-
-        {/* Description */}
-        <div className="mb-5">
-          <label className="block text-sm mb-2">Description</label>
-          <textarea
-            value={teamDesc}
-            onChange={(e) => setTeamDesc(e.target.value)}
-            rows={2}
-            placeholder="Add team description"
-            className="w-full bg-[#1c1d25] border border-white/30 rounded-lg px-3 py-2 outline-none text-white resize-none"
-          />
-        </div>
-
-        {/* Platform Selection */}
-        <div className="mb-5">
-          <label className="block text-sm mb-2">Connected Platforms</label>
-          <div className="flex gap-4">
-            <label className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${platforms.includes('line') ? 'bg-[#06c755]/20 border-[#06c755]' : 'bg-[#1c1d25] border-white/30'}`}>
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={platforms.includes('line')}
-                onChange={() => {
-                  if (platforms.includes('line')) {
-                    setPlatforms(platforms.filter(p => p !== 'line'));
-                  } else {
-                    setPlatforms([...platforms, 'line']);
-                  }
-                }}
-              />
-              <i className="fa-brands fa-line text-[#06c755] text-xl"></i>
-              <span className="text-sm">Line OA</span>
-            </label>
-
-            <label className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${platforms.includes('facebook') ? 'bg-[#1877f2]/20 border-[#1877f2]' : 'bg-[#1c1d25] border-white/30'}`}>
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={platforms.includes('facebook')}
-                onChange={() => {
-                  if (platforms.includes('facebook')) {
-                    setPlatforms(platforms.filter(p => p !== 'facebook'));
-                  } else {
-                    setPlatforms([...platforms, 'facebook']);
-                  }
-                }}
-              />
-              <i className="fa-brands fa-facebook text-[#1877f2] text-xl"></i>
-              <span className="text-sm">Facebook</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Members */}
-        <div className="mb-5">
-          <label className="block text-sm mb-2">Team Members</label>
-          <div className="bg-[#1c1d25] border border-white/30 rounded-lg p-3 h-[150px] overflow-y-auto custom-scrollbar">
-            {userOptions.length > 0 ? (
-              userOptions.map((user) => (
-                <label
-                  key={user.id}
-                  className="flex items-center gap-3 mb-2 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition"
-                >
-                  <input
-                    type="checkbox"
-                    checked={teamMembers.includes(user.name)}
-                    onChange={() => {
-                      if (teamMembers.includes(user.name)) {
-                        setTeamMembers(teamMembers.filter((u) => u !== user.name));
-                      } else {
-                        setTeamMembers([...teamMembers, user.name]);
-                      }
-                    }}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium flex items-center gap-2">
-                      {user.name}
-                      {/* แสดงป้าย You ถ้าเป็นตัวเอง */}
-                      {user.isMe && <span className="bg-purple-500 text-[10px] px-1.5 rounded text-white">You</span>}
-                    </span>
-                    <span className="text-xs text-white/50">{user.role}</span>
-                  </div>
-                </label>
-              ))
-            ) : (
-              <p className="text-gray-500 text-sm text-center mt-4">
-                No users found.
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-3 mt-8">
-          <button onClick={onClose} className="text-gray-300 hover:text-white cursor-pointer">Cancel</button>
-          <button onClick={onConfirm} className="bg-white/20 border border-white/40 text-white px-5 py-1.5 rounded-lg hover:bg-white/30 cursor-pointer">Save</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Confirm Delete Team Modal
-function ConfirmDeleteModal({ isOpen, teamName, onClose, onConfirm }) {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
-      <div className="relative bg-[#1E1E1E] border border-white/20 rounded-2xl p-6 w-[380px] text-white shadow-2xl">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={22} /></button>
-        <div className="flex flex-col gap-4 mt-2">
-          <h2 className="text-lg font-semibold flex flex-col items-center gap-2">Delete Team</h2>
-          <p className="text-gray-400 text-sm text-center">Are you sure you want to delete <b>{teamName}</b>? <br />This action cannot be undone.</p>
-          <div className="flex justify-end gap-3 mt-4">
-            <button onClick={onClose} className="text-gray-300 hover:text-white cursor-pointer">Cancel</button>
-            <button onClick={onConfirm} className="flex items-center gap-1 bg-red-500/30 border border-red-400 text-red-200 rounded-lg px-4 py-2 text-sm cursor-pointer hover:bg-red-500/50 transition"><Trash2 size={16} /> Delete</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================================
-// Main Component
-// ==========================================================
-export default function TeamSettingPage() {
-  const [teams, setTeams] = useState([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
-  const [editTeam, setEditTeam] = useState(null);
-  const [deleteTeam, setDeleteTeam] = useState(null);
-
-  const [teamName, setTeamName] = useState("");
-  const [teamDesc, setTeamDesc] = useState("");
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [platforms, setPlatforms] = useState([]);
-
-  const [userOptions, setUserOptions] = useState([]);
-
-  // 🟢 [BACKEND NOTE]: โหลดรายชื่อ Users และ Teams จาก API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // 🟢 โค้ดตัวอย่างสำหรับการดึง Users และข้อมูลตัวเอง
-        // const [usersRes, meRes, teamsRes] = await Promise.all([
-        //   fetch('/api/users'),
-        //   fetch('/api/users/me'),
-        //   fetch('/api/teams')
-        // ]);
-        // const usersData = await usersRes.json();
-        // const meData = await meRes.json();
-        // const teamsData = await teamsRes.json();
-
-        // 🟢 จัดการข้อมูล User Options เพื่อแสดงใน Checkbox
-        // let allUsers = [{ id: meData.id, name: meData.name, role: meData.role, isMe: true }];
-        // const others = usersData.map(u => ({ id: u.id, name: u.name, role: u.role, isMe: false }));
-        // setUserOptions([...allUsers, ...others]);
-
-        // 🟢 เซ็ตข้อมูล Teams
-        // setTeams(teamsData);
-
-        // ======================================================
-        // [Mock Processing]: สร้างข้อมูลจำลองเพื่อให้ UI ทำงานได้
-        const mockMe = { id: 999, name: "My Name", role: 'Owner', isMe: true };
-        const mockOthers = [{ id: 1, name: "Employee A", role: "Employee", isMe: false }];
-        setUserOptions([mockMe, ...mockOthers]);
-        setTeams([]); 
-        // ======================================================
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-
-    fetchData();
-  }, [isAddOpen, isEditOpen]); // ดึงข้อมูลผู้ใช้ใหม่ทุกครั้งที่เปิด Modal
-
-
-  const resetForm = () => {
-    setTeamName("");
-    setTeamDesc("");
-    setTeamMembers([]);
-    setPlatforms([]);
-  };
-
-  const validateTeam = (isEdit = false) => {
-    if (!teamName.trim()) {
-      alert("Please enter a team name");
-      return false;
-    }
-    const duplicate = teams.some(
-      (t) =>
-        t.name.toLowerCase() === teamName.trim().toLowerCase() &&
-        (!isEdit || t.id !== editTeam?.id)
-    );
-    if (duplicate) {
-      alert("This team name already exists");
-      return false;
-    }
-    if (teamMembers.length === 0) {
-      alert("Please select at least one member");
-      return false;
-    }
-    return true;
-  };
-
-  // 🟢 [BACKEND NOTE]: สร้างทีมใหม่ผ่าน API
-  const handleAddTeam = async () => {
-    if (!validateTeam()) return;
-    
-    const newTeamPayload = {
-      name: teamName.trim(),
-      desc: teamDesc.trim(),
-      members: teamMembers,
-      platforms: platforms,
-    };
-
-    try {
-        // 🟢 [API CALL]:
-        // const response = await fetch('/api/teams', {
-        //    method: 'POST',
-        //    body: JSON.stringify(newTeamPayload)
-        // });
-        // const createdTeam = await response.json();
-
-        // สมมติว่าได้ response กลับมา
-        const newTeam = { ...newTeamPayload, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
-        
-        setTeams((prev) => [...prev, newTeam]);
-        resetForm();
-        setIsAddOpen(false);
-    } catch (error) {
-        console.error("Error adding team", error);
-    }
-  };
-
-  // 🟢 [BACKEND NOTE]: แก้ไขทีมผ่าน API
-  const handleSaveEdit = async () => {
-    if (!validateTeam(true)) return;
-
-    const updatePayload = {
-        name: teamName.trim(),
-        desc: teamDesc.trim(),
-        members: teamMembers,
-        platforms: platforms,
-    };
-
-    try {
-        // 🟢 [API CALL]:
-        // await fetch(`/api/teams/${editTeam.id}`, {
-        //    method: 'PUT',
-        //    body: JSON.stringify(updatePayload)
-        // });
-
-        setTeams((prev) =>
-          prev.map((t) => (t.id === editTeam.id ? { ...t, ...updatePayload } : t))
-        );
-        resetForm();
-        setEditTeam(null);
-        setIsEditOpen(false);
-    } catch (error) {
-        console.error("Error updating team", error);
-    }
-  };
-
-  // 🟢 [BACKEND NOTE]: ลบทีมผ่าน API
-  const handleDelete = async (id) => {
-    try {
-        // 🟢 [API CALL]:
-        // await fetch(`/api/teams/${id}`, { method: 'DELETE' });
-
-        setTeams((prev) => prev.filter((team) => team.id !== id));
-        setIsDeleteOpen(false);
-    } catch (error) {
-         console.error("Error deleting team", error);
-    }
-  };
-
-
-  const handleOpenDelete = (team) => {
-    setDeleteTeam(team);
-    setIsDeleteOpen(true);
-  };
-
-  const handleOpenEdit = (team) => {
-    setEditTeam(team);
-    setTeamName(team.name);
-    setTeamDesc(team.desc);
-    setTeamMembers(team.members);
-    setPlatforms(team.platforms || []);
-    setIsEditOpen(true);
-  };
-
-
-  // ==========================================================
-  // UI ส่วนล่างนี้ไม่มีการดัดแปลงใดๆ โครงสร้าง Component ยังอยู่ครบ 100%
-  // ==========================================================
-  return (
-    <>
-      <TeamModal
-        isOpen={isAddOpen}
-        title="Add Team"
-        onClose={() => setIsAddOpen(false)}
-        onConfirm={handleAddTeam}
-        teamName={teamName}
-        setTeamName={setTeamName}
-        teamDesc={teamDesc}
-        setTeamDesc={setTeamDesc}
-        teamMembers={teamMembers}
-        setTeamMembers={setTeamMembers}
-        userOptions={userOptions}
-        platforms={platforms}
-        setPlatforms={setPlatforms}
-      />
-
-      <TeamModal
-        isOpen={isEditOpen}
-        title="Edit Team"
-        onClose={() => { setIsEditOpen(false); setEditTeam(null); }}
-        onConfirm={handleSaveEdit}
-        teamName={teamName}
-        setTeamName={setTeamName}
-        teamDesc={teamDesc}
-        setTeamDesc={setTeamDesc}
-        teamMembers={teamMembers}
-        setTeamMembers={setTeamMembers}
-        userOptions={userOptions}
-        platforms={platforms}
-        setPlatforms={setPlatforms}
-      />
-
-      <ConfirmDeleteModal
-        isOpen={isDeleteOpen}
-        teamName={deleteTeam?.name}
-        onClose={() => setIsDeleteOpen(false)}
-        onConfirm={() => handleDelete(deleteTeam.id)}
-      />
-
-      <div className="w-full h-[94vh] p-2 md:p-4">
-        <div className="bg-[rgba(32,41,59,0.37)] border border-[rgba(254,253,253,0.5)] backdrop-blur-xl rounded-3xl shadow-2xl pt-5 px-4 flex flex-col h-full">
-
-          <div className="relative max-w-3xl p-8 pb-0">
-            <div className="flex items-center gap-3 mb-8 ">
-              <UsersRound className="text-white p-2 bg-white/5 rounded-xl border border-white/10" size={50} />
-              <div>
-                <h1 className="text-xl font-semibold text-white">Team Setting</h1>
-                <p className="text-sm text-white/70">
-                  Manage your teams and members.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-white/28 mx-7 mb-8"></div>
-
-          <div className="flex justify-between items-center w-full mb-6 px-4 gap-4">
-            <button onClick={() => { resetForm(); setIsAddOpen(true); }} className="flex items-center text-white bg-[rgba(255,255,255,0.22)] rounded-2xl py-3 px-5 hover:bg-[#ffffff52] cursor-pointer">
-              <i className="fa-solid fa-plus mr-2"></i> Add Team
-            </button>
-            <div className="flex items-center text-white bg-[rgba(255,255,255,0.22)] rounded-2xl py-2 px-4 gap-2 w-[250px]">
-              <i className="fa-solid fa-magnifying-glass mr-3"></i>
-              <input type="text" className="text-white outline-0 bg-transparent w-full" placeholder="Search Team..." />
-            </div>
-          </div>
-
-          <div className="flex justify-center items-center px-4">
-            {teams.length === 0 ? (
-              <div className="flex flex-col items-center text-center p-8 gap-2">
-                <i className="fa-solid fa-users-viewfinder text-9xl"></i>
-                <h2 className="text-white text-xl font-semibold mb-2">Create your first team</h2>
-                <p className="text-gray-400 text-sm max-w-md">Teams can be used to group users together to organize inboxes and contact assignments.</p>
-              </div>
-            ) : (
-              <div className="w-full space-y-4 overflow-y-auto">
-                {teams.map((team) => (
-                  <div key={team.id} className="bg-[#ffffff21] border border-white/20 rounded-xl p-4 text-white flex justify-between items-center">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 rounded-2xl bg-[#BE7EC7] flex items-center justify-center shadow-[0_0_20px_rgba(190,126,199,0.3)]">
+                        <Settings2 size={24} className="text-white" />
+                    </div>
                     <div>
-                      <h3 className="text-lg font-semibold flex items-center gap-3">
-                        {team.name}
-                        <div className="flex gap-2">
-                          {team.platforms?.includes('line') && <i className="fa-brands fa-line text-[#06c755] text-2xl"></i>}
-                          {team.platforms?.includes('facebook') && <i className="fa-brands fa-facebook text-[#1877f2] text-2xl"></i>}
+                        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+                        <p className="text-white/40 text-xs font-medium">Define team scope and assign members</p>
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                    {/* Team Name */}
+                    <div>
+                        <label className={labelClass}>Team Name</label>
+                        <input
+                            type="text"
+                            value={teamName}
+                            onChange={(e) => setTeamName(e.target.value)}
+                            placeholder="e.g. Customer Support Team A"
+                            className={inputClass}
+                        />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className={labelClass}>Team Description</label>
+                        <textarea
+                            value={teamDesc}
+                            onChange={(e) => setTeamDesc(e.target.value)}
+                            rows={2}
+                            placeholder="Briefly describe this team's responsibility"
+                            className={`${inputClass} resize-none`}
+                        />
+                    </div>
+
+                    {/* Platform Selection */}
+                    <div>
+                        <label className={labelClass}>Connect to Platforms</label>
+                        <div className="flex gap-3">
+                            {['line', 'facebook'].map(p => (
+                                <button
+                                    key={p}
+                                    onClick={() => setPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])}
+                                    className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-2xl border transition-all font-bold text-xs uppercase tracking-widest ${
+                                        platforms.includes(p) 
+                                        ? (p === 'line' ? 'bg-[#06c755]/10 border-[#06c755] text-[#06c755]' : 'bg-[#1877f2]/10 border-[#1877f2] text-[#1877f2]') 
+                                        : 'bg-white/5 border-white/5 text-white/20 hover:bg-white/10'
+                                    }`}
+                                >
+                                    <i className={`fa-brands fa-${p} text-xl`}></i>
+                                    {p === 'line' ? 'Line OA' : 'Facebook'}
+                                </button>
+                            ))}
                         </div>
-                      </h3>
-                      <p className="text-sm text-gray-400 mb-2">{team.desc || "No description"}</p>
-                      <p className="text-xs text-gray-300">
-                        Members: {team.members.length <= 3 ? team.members.join(", ") : <>{team.members.slice(0, 3).join(", ")} <span className="text-gray-400">+{team.members.length - 3} more</span></>}
-                      </p>
                     </div>
-                    <div className="flex gap-3">
-                      <button onClick={() => handleOpenDelete(team)} className="flex items-center gap-1 bg-red-500/30 border border-red-400 text-red-200 rounded-lg px-3 py-1 hover:bg-red-500/50 cursor-pointer"><Trash2 size={16} /> Delete</button>
-                      <button onClick={() => handleOpenEdit(team)} className="flex items-center gap-1 bg-white/20 border border-white/40 rounded-lg px-3 py-1 hover:bg-white/30 cursor-pointer"><Edit size={16} /> Manage</button>
+
+                    {/* Members */}
+                    <div>
+                        <label className={labelClass}>Assign Members ({teamMembers.length})</label>
+                        <div className="bg-white/[0.02] border border-white/5 rounded-[1.5rem] p-2 max-h-[180px] overflow-y-auto custom-scrollbar">
+                            {userOptions.map((user) => (
+                                <label
+                                    key={user.id}
+                                    className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all mb-1 last:mb-0 ${teamMembers.includes(user.name) ? 'bg-[#BE7EC7]/10' : 'hover:bg-white/5'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-xs font-bold text-white/40 uppercase">
+                                            {user.name.substring(0, 2)}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold flex items-center gap-2">
+                                                {user.name}
+                                                {user.isMe && <span className="bg-[#BE7EC7] text-[9px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter">You</span>}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{user.role}</span>
+                                        </div>
+                                    </div>
+                                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${teamMembers.includes(user.name) ? 'bg-[#BE7EC7] border-[#BE7EC7]' : 'border-white/10'}`}>
+                                        {teamMembers.includes(user.name) && <Check size={14} className="text-white" />}
+                                        <input
+                                            type="checkbox"
+                                            className="hidden"
+                                            checked={teamMembers.includes(user.name)}
+                                            onChange={() => {
+                                                if (teamMembers.includes(user.name)) {
+                                                    setTeamMembers(teamMembers.filter((u) => u !== user.name));
+                                                } else {
+                                                    setTeamMembers([...teamMembers, user.name]);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </label>
+                            ))}
+                        </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+
+                <div className="flex gap-4 mt-10">
+                    <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl bg-white/5 text-white/50 font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all border border-white/5">Cancel</button>
+                    <button onClick={onConfirm} className="flex-1 py-3.5 rounded-2xl bg-[#BE7EC7] text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-[#BE7EC7]/20 hover:bg-[#a66bb0] transition-all transform active:scale-95">Save Team</button>
+                </div>
+            </div>
         </div>
-      </div>
-    </>
-  );
+    );
+}
+
+// Confirm Delete Modal
+function ConfirmDeleteModal({ isOpen, teamName, onClose, onConfirm }) {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-[110] p-4">
+            <div className="bg-[#1F192E] border border-white/10 rounded-[2.5rem] p-8 w-full max-w-sm text-center shadow-2xl">
+                <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-500">
+                    <Trash2 size={32} />
+                </div>
+                <h2 className="text-white text-xl font-bold mb-2 tracking-tight">Delete Team?</h2>
+                <p className="text-white/40 text-sm mb-8">Are you sure you want to remove <span className="text-white font-bold">"{teamName}"</span>? This cannot be undone.</p>
+                <div className="flex gap-3">
+                    <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-white/5 text-white font-bold text-xs uppercase tracking-widest hover:bg-white/10">Cancel</button>
+                    <button onClick={onConfirm} className="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all">Delete</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function TeamSettingPage() {
+    const [teams, setTeams] = useState([]);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [editTeam, setEditTeam] = useState(null);
+    const [deleteTeam, setDeleteTeam] = useState(null);
+    const [teamName, setTeamName] = useState("");
+    const [teamDesc, setTeamDesc] = useState("");
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [platforms, setPlatforms] = useState([]);
+    const [userOptions, setUserOptions] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const mockMe = { id: 999, name: "My Name", role: 'Owner', isMe: true };
+                const mockOthers = [{ id: 1, name: "Employee A", role: "Manager", isMe: false }];
+                setUserOptions([mockMe, ...mockOthers]);
+                setIsLoaded(true);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const resetForm = () => {
+        setTeamName("");
+        setTeamDesc("");
+        setTeamMembers([]);
+        setPlatforms([]);
+    };
+
+    const handleAddTeam = async () => {
+        if (!teamName.trim() || teamMembers.length === 0) return alert("Missing info");
+        const newTeam = { id: crypto.randomUUID(), name: teamName.trim(), desc: teamDesc.trim(), members: teamMembers, platforms: platforms };
+        setTeams((prev) => [...prev, newTeam]);
+        setIsAddOpen(false);
+        resetForm();
+    };
+
+    const handleSaveEdit = async () => {
+        setTeams((prev) => prev.map((t) => (t.id === editTeam.id ? { ...t, name: teamName, desc: teamDesc, members: teamMembers, platforms: platforms } : t)));
+        setIsEditOpen(false);
+        setEditTeam(null);
+        resetForm();
+    };
+
+    const handleOpenEdit = (team) => {
+        setEditTeam(team);
+        setTeamName(team.name);
+        setTeamDesc(team.desc);
+        setTeamMembers(team.members);
+        setPlatforms(team.platforms || []);
+        setIsEditOpen(true);
+    };
+
+    return (
+        <div className="w-full h-[95vh] p-4 lg:p-6 ">
+            <div className="bg-[#161223] border border-white/5 rounded-[2.5rem] shadow-2xl flex flex-col h-full overflow-hidden">
+                
+                {/* Header Section */}
+                <div className="p-8 pb-6 shrink-0">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-[#BE7EC7] flex items-center justify-center shadow-[0_0_20px_rgba(190,126,199,0.3)]">
+                                <UsersRound className="text-white" size={24} />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-white tracking-tight leading-none">Team Setting</h1>
+                                <p className="text-white/30 text-xs mt-1.5 font-medium">Organize agents and assign communication platforms</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            <div className="relative flex-1 md:w-64">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                                <input type="text" className="w-full bg-white/5 border border-white/5 focus:border-[#BE7EC7]/50 outline-none rounded-2xl py-2.5 pl-12 pr-4 text-white text-sm" placeholder="Search team..." />
+                            </div>
+                            <button onClick={() => { resetForm(); setIsAddOpen(true); }} className="flex items-center gap-2 bg-[#BE7EC7] hover:bg-[#a66bb0] text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-[#BE7EC7]/20 transition-all">
+                                <Plus size={18} /> Add Team
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="h-px bg-white/5 mx-8"></div>
+
+                {/* Teams List Area */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+                    {teams.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center py-20">
+                            <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 border border-white/5">
+                                <Globe size={40} className="text-white/10" />
+                            </div>
+                            <h2 className="text-white text-xl font-bold mb-2">No Teams Configured</h2>
+                            <p className="text-white/30 text-sm max-w-xs mx-auto">Create teams to automate inbox assignments and group your agents.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                            {teams.map((team) => (
+                                <div key={team.id} className="group relative bg-[#1F192E] border border-white/5 rounded-[1.8rem] p-6 hover:border-[#BE7EC7]/30 transition-all duration-300">
+                                    {/* Sidebar Accent */}
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-[#BE7EC7] rounded-r-full opacity-0 group-hover:opacity-100 transition-all"></div>
+                                    
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <h3 className="text-lg font-bold text-white tracking-tight">{team.name}</h3>
+                                                <div className="flex gap-1.5">
+                                                    {team.platforms?.includes('line') && <i className="fa-brands fa-line text-[#06c755] text-xl"></i>}
+                                                    {team.platforms?.includes('facebook') && <i className="fa-brands fa-facebook text-[#1877f2] text-xl"></i>}
+                                                </div>
+                                            </div>
+                                            <p className="text-white/40 text-xs font-medium mb-4 line-clamp-1">{team.desc || "No description provided"}</p>
+                                            
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-white/20 mr-1">Members:</span>
+                                                {team.members.slice(0, 3).map((m, i) => (
+                                                    <span key={i} className="px-2.5 py-1 bg-white/5 rounded-lg text-[10px] font-bold text-white/60 border border-white/5">
+                                                        {m}
+                                                    </span>
+                                                ))}
+                                                {team.members.length > 3 && (
+                                                    <span className="text-[10px] font-bold text-[#BE7EC7] bg-[#BE7EC7]/10 px-2 py-1 rounded-lg">
+                                                        +{team.members.length - 3} more
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-2 shrink-0">
+                                            <button onClick={() => { setDeleteTeam(team); setIsDeleteOpen(true); }} className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/10">
+                                                <Trash2 size={16} />
+                                            </button>
+                                            <button onClick={() => handleOpenEdit(team)} className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 px-4 h-10 rounded-xl transition-all font-bold text-xs uppercase tracking-widest">
+                                                <Edit size={14} /> Manage
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Modals */}
+            <TeamModal
+                isOpen={isAddOpen} title="Add New Team" onClose={() => setIsAddOpen(false)} onConfirm={handleAddTeam}
+                teamName={teamName} setTeamName={setTeamName} teamDesc={teamDesc} setTeamDesc={setTeamDesc}
+                teamMembers={teamMembers} setTeamMembers={setTeamMembers} userOptions={userOptions} platforms={platforms} setPlatforms={setPlatforms}
+            />
+
+            <TeamModal
+                isOpen={isEditOpen} title="Update Team" onClose={() => setIsEditOpen(false)} onConfirm={handleSaveEdit}
+                teamName={teamName} setTeamName={setTeamName} teamDesc={teamDesc} setTeamDesc={setTeamDesc}
+                teamMembers={teamMembers} setTeamMembers={setTeamMembers} userOptions={userOptions} platforms={platforms} setPlatforms={setPlatforms}
+            />
+
+            <ConfirmDeleteModal
+                isOpen={isDeleteOpen} teamName={deleteTeam?.name} onClose={() => setIsDeleteOpen(false)} onConfirm={() => { setTeams(prev => prev.filter(t => t.id !== deleteTeam.id)); setIsDeleteOpen(false); }}
+            />
+        </div>
+    );
 }

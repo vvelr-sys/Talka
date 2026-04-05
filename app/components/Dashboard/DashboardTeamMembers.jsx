@@ -1,151 +1,131 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image'; 
+import { ChevronLeft, ChevronRight, Users, ShieldCheck, Mail, MoreHorizontal, Shield } from 'lucide-react';
 
 export default function DashboardTeamMembers() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // 🟢 [BACKEND NOTE]: ไม่จำเป็นต้องเก็บ State 'myTeamName' ถ้าไม่ได้โชว์บน UI แต่ถ้าจะโชว์ก็เก็บมาด้วยได้ครับ
-  const [myTeamName, setMyTeamName] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 3; 
+  const ITEMS_PER_PAGE = 4; // ปรับเป็น 4 เพื่อให้เต็มพื้นที่ h-550px
 
-  // 🟢 [BACKEND NOTE]: เปลี่ยนการโหลดข้อมูลมาใช้ API แทน LocalStorage
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
         setLoading(true);
-
-        // 🟢 [API CALL]: ขอรายชื่อเพื่อนร่วมทีมของฉัน
-        // const response = await fetch('/api/dashboard/my-team-members');
-        // const data = await response.json();
-        // setMyTeamName(data.teamName);
-        // setMembers(data.members); 
-
-        // ==========================================
-        // [Mock Processing] จำลองข้อมูลระหว่างรอ API
-        const mockMyTeamName = "Support Team A";
         const mockMembers = [
-            { id: 1, name: "Somchai Admin", role: "Owner", avatar: "https://ui-avatars.com/api/?name=Somchai+Admin&background=random" },
-            { id: 2, name: "Employee A", role: "Member", avatar: "https://ui-avatars.com/api/?name=Employee+A&background=random" },
-            { id: 3, name: "Employee B", role: "Member", avatar: "https://ui-avatars.com/api/?name=Employee+B&background=random" },
-            { id: 4, name: "Employee C", role: "Member", avatar: "https://ui-avatars.com/api/?name=Employee+C&background=random" },
+            { id: 1, name: "Somchai Admin", role: "Owner", avatar: "https://ui-avatars.com/api/?name=Somchai+Admin&background=BE7EC7&color=fff", isOnline: true },
+            { id: 2, name: "Employee A", role: "Manager", avatar: "https://ui-avatars.com/api/?name=Employee+A&background=4ade80&color=fff", isOnline: true },
+            { id: 3, name: "Employee B", role: "Member", avatar: "https://ui-avatars.com/api/?name=Employee+B&background=60a5fa&color=fff", isOnline: false },
+            { id: 4, name: "Employee C", role: "Member", avatar: "https://ui-avatars.com/api/?name=Employee+C&background=fb7185&color=fff", isOnline: true },
+            { id: 5, name: "Employee D", role: "Member", avatar: "https://ui-avatars.com/api/?name=Employee+D&background=facc15&color=fff", isOnline: false },
         ];
-
-        setMyTeamName(mockMyTeamName);
-        
-        // จำลอง Delay ให้เห็นหน้า Loading แบบสวยๆ
-        setTimeout(() => {
-            setMembers(mockMembers);
-            setLoading(false);
-        }, 300);
-        // ==========================================
-
-      } catch (error) {
-        console.error("Error fetching team members", error);
-        setMembers([]);
-        setLoading(false);
-      }
+        setTimeout(() => { setMembers(mockMembers); setLoading(false); }, 600);
+      } catch (error) { setLoading(false); }
     };
-
     fetchTeamMembers();
   }, []);
 
-  // Pagination Logic 
-  const totalPages = Math.ceil(members.length / ITEMS_PER_PAGE) || 1; // กัน Error หารด้วย 0
-  const currentItems = members.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const totalPages = Math.ceil(members.length / ITEMS_PER_PAGE) || 1;
+  const currentItems = members.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(curr => curr + 1);
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(curr => curr - 1);
-  };
-
-
-  // ==========================================================
-  // UI ส่วนล่างนี้ไม่มีการดัดแปลงใดๆ โครงสร้าง Component ยังอยู่ครบ 100%
-  // ==========================================================
   return (
-    <div className="bg-[rgba(32,41,59,0.37)] border border-[rgba(254,253,253,0.5)] backdrop-blur-xl rounded-3xl shadow-2xl p-4 h-90 w-193 ml-3 flex flex-col">
+    <div className="bg-[#161223] border border-white/5 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-7 h-[550px] w-full flex flex-col overflow-hidden transition-all duration-300">
       
-      <h2 className="text-white/90 text-sm pb-3 mb-4 border-b border-white/20 shrink-0">
-        Team Members
-      </h2>
+      {/* Header Section */}
+      <div className="flex items-center justify-between mb-7 shrink-0 px-1">
+        <div className="flex flex-col">
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#BE7EC7] flex items-center justify-center shadow-[0_0_20px_rgba(190,126,199,0.3)]">
+                    <Users size={24} className="text-white" />
+                </div>
+                <div>
+                    <h2 className="text-white font-bold text-xl tracking-tight leading-none">Team Members</h2>
+                    <p className="text-[#BE7EC7] text-[10px] mt-1.5 font-black uppercase tracking-[0.2em] opacity-80">Support Team A</p>
+                </div>
+            </div>
+        </div>
+        <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-white/40 hover:text-white transition-colors">
+            <MoreHorizontal size={20} />
+        </button>
+      </div>
       
-      <div className="flex flex-col gap-y-4 grow">
-        
-        <div className="transition-opacity duration-150 opacity-100">
-          
+      {/* Members List Section */}
+      <div className="flex-1 space-y-3 overflow-y-auto pr-1 custom-scrollbar">
           {loading ? (
-             <div className="text-white/50 p-4 text-xs text-center animate-pulse mt-10">Loading team...</div>
-          ) : members.length > 0 ? (
+             <div className="space-y-3 animate-pulse">
+                {[1,2,3,4].map(i => <div key={i} className="h-[84px] bg-white/5 rounded-[1.8rem] w-full"></div>)}
+             </div>
+          ) : (
             currentItems.map((member) => ( 
-              <div key={member.id} className="flex items-center justify-between w-full py-2"> 
+              <div key={member.id} className="group relative flex items-center justify-between p-4 bg-[#1F192E] border border-white/[0.03] rounded-[1.8rem] hover:bg-[#251E38] hover:border-[#BE7EC7]/30 transition-all duration-300"> 
                 
-                <div className="flex items-center gap-3">
-                  <div className="relative shrink-0">
-                    <Image
-                      src={member.avatar}
-                      alt={member.name}
-                      width={45} 
-                      height={45}
-                      className="rounded-full"
+                {/* Accent Side Bar */}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 group-hover:h-8 bg-[#BE7EC7] rounded-r-full transition-all duration-300"></div>
+
+                <div className="flex items-center gap-4">
+                  <div className="relative shrink-0 w-14 h-14">
+                    <img 
+                        src={member.avatar} 
+                        className="w-full h-full rounded-2xl border-2 border-white/5 object-cover shadow-lg group-hover:scale-105 transition-transform duration-300" 
+                        alt={member.name}
                     />
-                    {/* ถ้ามี property isOnline ในอนาคตค่อยเปิดใช้ */}
                     {member.isOnline && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[rgba(32,41,59,0.5)] rounded-full"></span>
+                      <span className="absolute -bottom-1 -right-1 flex h-4.5 w-4.5 items-center justify-center bg-emerald-500 rounded-full border-[3px] border-[#1F192E] group-hover:border-[#251E38] shadow-[0_0_10px_rgba(16,185,129,0.4)]"></span>
                     )}
                   </div>
-
-                  <div className="flex flex-col">
-                    <p className="text-white text-sm font-medium">{member.name}</p>
-                    <p className="text-white/60 text-xs">{member.role}</p>
+                  <div>
+                    <p className="text-white font-bold text-base tracking-tight">{member.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        {member.role === "Owner" ? (
+                            <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                                <Shield size={10} className="text-amber-500" />
+                                <span className="text-amber-500 text-[9px] font-black uppercase tracking-tighter">Owner</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded-md">
+                                <ShieldCheck size={10} className="text-white/40" />
+                                <span className="text-white/40 text-[9px] font-bold uppercase tracking-wider">{member.role}</span>
+                            </div>
+                        )}
+                    </div>
                   </div>
+                </div>
 
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                    <button className="w-10 h-10 rounded-xl bg-[#BE7EC7]/10 text-[#BE7EC7] hover:bg-[#BE7EC7] hover:text-white border border-[#BE7EC7]/20 transition-all flex items-center justify-center shadow-lg">
+                        <Mail size={16} />
+                    </button>
                 </div>
               </div>
             ))
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-white/40 text-xs italic gap-2 py-8">
-                <i className="fa-solid fa-users-slash text-2xl"></i>
-                <p>You are not in any team.</p>
-            </div>
           )}
-        
-        </div>
-        
       </div>
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/20 shrink-0 ">
+      {/* Pagination Section */}
+      <div className="flex items-center justify-between mt-6 pt-6 border-t border-white/5 shrink-0">
         <div className="flex items-center gap-3">
-          
-          <span 
-            onClick={handlePrevPage} 
-            className={`text-white/60 cursor-pointer transition-colors ${currentPage === 1 ? 'opacity-40 pointer-events-none' : 'hover:text-white'}`}
+          <button 
+            onClick={() => setCurrentPage(c => Math.max(1, c-1))} 
+            disabled={currentPage === 1} 
+            className="w-11 h-11 rounded-2xl bg-[#1F192E] border border-white/5 hover:bg-[#BE7EC7]/20 hover:text-[#BE7EC7] text-white/60 flex items-center justify-center transition-all disabled:opacity-20"
           >
-            &lt;
-          </span>
-          
-          <span 
-            onClick={handleNextPage} 
-            className={`text-white/60 cursor-pointer transition-colors ${currentPage === totalPages ? 'opacity-40 pointer-events-none' : 'hover:text-white'}`}
+            <ChevronLeft size={22} />
+          </button>
+          <button 
+            onClick={() => setCurrentPage(c => Math.min(totalPages, c+1))} 
+            disabled={currentPage === totalPages} 
+            className="w-11 h-11 rounded-2xl bg-[#1F192E] border border-white/5 hover:bg-[#BE7EC7]/20 hover:text-[#BE7EC7] text-white/60 flex items-center justify-center transition-all disabled:opacity-20"
           >
-            &gt;
-          </span>
+            <ChevronRight size={22} />
+          </button>
         </div>
         
-        <span className="text-white/60 text-xs">
-          Page {currentPage} of {totalPages === 0 ? 1 : totalPages}
-        </span>
+        <div className="bg-[#1F192E] px-5 py-2.5 rounded-2xl border border-white/5 shadow-inner">
+            <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">
+                Page <span className="text-[#BE7EC7]">{currentPage}</span> <span className="mx-1">/</span> {totalPages}
+            </span>
+        </div>
       </div>
-
     </div>
   );
 }

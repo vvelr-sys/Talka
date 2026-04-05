@@ -1,233 +1,123 @@
 "use client";
-
 import React, { useState, useMemo, useEffect } from 'react';
-import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts';
-
-// 🟢 [BACKEND NOTE]: เปลี่ยนข้อมูลตรงนี้ให้เป็นเพียงค่า Default รอระหว่าง API โหลด
-const initialMockData = [
-  { time: '00:00', opened: 0, closed: 0 },
-  { time: '03:00', opened: 0, closed: 0 },
-  { time: '06:00', opened: 2, closed: 0 },
-  { time: '09:00', opened: 4, closed: 0 },
-  { time: '12:00', opened: 2, closed: 2 },
-  { time: '15:00', opened: 3, closed: 5 },
-  { time: '18:00', opened: 0, closed: 2 },
-  { time: '21:00', opened: 0, closed: 2 },
-  { time: '24:00', opened: 0, closed: 0 },
-];
+import { 
+  ResponsiveContainer, AreaChart, Area, CartesianGrid, 
+  XAxis, YAxis, Tooltip 
+} from 'recharts';
+import { Calendar, ChevronDown, TrendingUp, CheckCircle2, MessageSquare } from 'lucide-react';
 
 export default function DashboardConversation() {
-  
+  const [isMounted, setIsMounted] = useState(false); // 🔥 ตัวแก้บั๊กกราฟไม่ขึ้น
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState('Today');
+  const [currentData, setCurrentData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 🟢 [BACKEND NOTE]: สร้าง State สำหรับรับข้อมูลกราฟจาก API
-  const [currentData, setCurrentData] = useState(initialMockData);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const options = ['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days'];
-
-  // 🟢 [BACKEND NOTE]: useEffect สำหรับยิง API เมื่อเปลี่ยน Option
+  // 1. จัดการเรื่อง Mounting เพื่อให้ Recharts ทำงานได้ใน Next.js
   useEffect(() => {
-    const fetchChartData = async () => {
-      setIsLoading(true);
-      try {
-        // 🟢 [API CALL]: ส่ง selectedOption ไปให้ Backend ประมวลผล
-        // ตัวอย่างเช่น: /api/dashboard/conversations?period=Today
-        // const response = await fetch(`/api/dashboard/conversations?period=${selectedOption}`);
-        // const data = await response.json();
-        // setCurrentData(data);
+    setIsMounted(true);
+  }, []);
 
-        // ===============================================
-        // [Mock Processing]: จำลองข้อมูลเพื่อไม่ให้หน้าเว็บพังตอนรอต่อ Backend
-        const allChartDataMock = {
-          'Today': [
-            { time: '00:00', opened: 0, closed: 0 }, { time: '03:00', opened: 0, closed: 0 }, { time: '06:00', opened: 2, closed: 0 },
-            { time: '09:00', opened: 4, closed: 0 }, { time: '12:00', opened: 2, closed: 2 }, { time: '15:00', opened: 3, closed: 5 },
-            { time: '18:00', opened: 0, closed: 2 }, { time: '21:00', opened: 0, closed: 2 }, { time: '24:00', opened: 0, closed: 0 },
-          ],
-          'Yesterday': [
-            { time: '00:00', opened: 0, closed: 0 }, { time: '03:00', opened: 2, closed: 0 }, { time: '06:00', opened: 6, closed: 0 },
-            { time: '09:00', opened: 0, closed: 1 }, { time: '12:00', opened: 2, closed: 1 }, { time: '15:00', opened: 5, closed: 3 },
-            { time: '18:00', opened: 0, closed: 4 }, { time: '21:00', opened: 0, closed: 7 }, { time: '24:00', opened: 0, closed: 0 },
-          ],
-          'Last 7 Days': [
-            { time: 'Mon', opened: 7, closed: 0 }, { time: 'Tue', opened: 8, closed: 1 }, { time: 'Wed', opened: 6, closed: 15 },
-            { time: 'Thu', opened: 7, closed: 5 }, { time: 'Fri', opened: 4, closed: 9 }, { time: 'Sat', opened: 7, closed: 5 },
-            { time: 'Sun', opened: 3, closed: 7 },
-          ],
-          'Last 30 Days': [
-            { time: 'Week 1', opened: 48, closed: 26 }, { time: 'Week 2', opened: 82, closed: 54 },
-            { time: 'Week 3', opened: 77, closed: 57 }, { time: 'Week 4', opened: 43, closed: 113 },
-          ]
-        };
-
-        setCurrentData(allChartDataMock[selectedOption] || allChartDataMock['Today']);
-        // ===============================================
-
-      } catch (error) {
-        console.error("Failed to fetch chart data:", error);
-      } finally {
-        setIsLoading(false);
-      }
+  // 2. Fetch ข้อมูล (Mock Data)
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    setIsLoading(true);
+    const allChartDataMock = {
+        'Today': [
+          { time: '00:00', opened: 2, closed: 1 }, { time: '04:00', opened: 4, closed: 2 }, 
+          { time: '08:00', opened: 12, closed: 5 }, { time: '12:00', opened: 8, closed: 10 }, 
+          { time: '16:00', opened: 15, closed: 12 }, { time: '20:00', opened: 6, closed: 14 }, 
+          { time: '23:59', opened: 2, closed: 4 }
+        ],
+        'Yesterday': [
+            { time: '00:00', opened: 5, closed: 2 }, { time: '12:00', opened: 18, closed: 10 }, { time: '23:59', opened: 3, closed: 8 }
+        ],
     };
 
-    fetchChartData();
-  }, [selectedOption]);
+    setTimeout(() => {
+      setCurrentData(allChartDataMock[selectedOption] || allChartDataMock['Today']);
+      setIsLoading(false);
+    }, 600);
+  }, [selectedOption, isMounted]);
 
-
-  const handleSelect = (option) => {
-    setSelectedOption(option);
-    setIsOpen(false);
-  };
-
-  const { totals, yAxisConfig } = useMemo(() => {
-    let maxDataValue = 0;
-    const totals = currentData.reduce(
-        (acc, curr) => {
-            const currentMax = Math.max(curr.opened, curr.closed, 0);
-            maxDataValue = Math.max(maxDataValue, currentMax);
-
-            return {
-                opened: acc.opened + curr.opened,
-                closed: acc.closed + curr.closed,
-            };
-        },
-        { opened: 0, closed: 0 }
-    );
-
-    let domainMax = 10;
-    let step = 2;
-
-    if (maxDataValue > 30) {
-        domainMax = Math.ceil(maxDataValue / 50) * 50; 
-        step = domainMax / 5; 
-    } else if (maxDataValue > 10) {
-        domainMax = Math.ceil(maxDataValue / 5) * 5; 
-        step = 5;
-    } 
-    
-    const generatedTicks = [];
-    for (let i = 0; i <= domainMax; i += step) {
-        generatedTicks.push(i);
-    }
-    
-    return {
-        totals: totals,
-        yAxisConfig: {
-            domain: [0, domainMax],
-            ticks: generatedTicks.length > 0 ? generatedTicks : [0, 10],
-        }
-    };
+  const totals = useMemo(() => {
+    return currentData.reduce((acc, curr) => ({
+      opened: acc.opened + curr.opened,
+      closed: acc.closed + curr.closed,
+    }), { opened: 0, closed: 0 });
   }, [currentData]);
-  
-  
-  // ==========================================================
-  // UI ส่วนล่างนี้ไม่มีการดัดแปลงใดๆ โครงสร้าง Component ยังอยู่ครบ 100%
-  // ==========================================================
+
+  // ถ้ายังไม่ Mount ไม่ต้องวาดอะไรเลย (ป้องกัน Hydration Error)
+  if (!isMounted) return <div className="h-[550px] w-full bg-[#161223] rounded-[2.5rem]" />;
+
   return (
-    <div className="bg-[rgba(32,41,59,0.37)] border border-[rgba(254,253,253,0.5)] backdrop-blur-xl rounded-3xl shadow-2xl p-4 flex flex-col min-h-[400px]">
+    <div className="bg-[#161223] border border-white/5 rounded-[2.5rem] shadow-2xl p-8 flex flex-col w-full h-[550px]">
       
-      <div className="flex justify-between items-center shrink-0 relative z-10">
-        <div className="flex items-center gap-2">
-          <h2 className="text-white/90 text-sm">Conversations Overview</h2>
-      </div>
+      {/* Header & Dropdown */}
+      <div className="flex justify-between items-start mb-8">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#BE7EC7]/10 flex items-center justify-center">
+              <TrendingUp size={18} className="text-[#BE7EC7]" />
+            </div>
+            <h2 className="text-white font-bold text-lg">Conversations Overview</h2>
+          </div>
+        </div>
         
         <div className="relative">
-          <button 
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex justify-between items-center w-36 bg-black/20 hover:bg-black/30 backdrop-blur-sm border border-white/20 px-3.5 py-2 rounded-xl text-sm text-white/90 transition-all duration-200"
-            >
-            <span>{selectedOption}</span>
-            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" className={`text-white/80 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
-              <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-3 bg-[#1F192E] border border-white/5 px-4 py-2.5 rounded-2xl text-xs font-bold text-white/70">
+            <span className="tracking-widest uppercase">{selectedOption}</span>
+            <ChevronDown size={14} className={isOpen ? 'rotate-180' : ''} />
           </button>
-
           {isOpen && (
-            <div className="absolute right-0 top-full mt-2 w-36 bg-[#2a3042] border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              {options.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => handleSelect(option)}
-                  className={`w-full text-left px-4 py-2 text-sm transition-colors ${selectedOption === option ? 'bg-blue-500/20 text-blue-400' : 'text-white/80 hover:bg-white/5 hover:text-white'}`}
-                >
-                  {option}
-                </button>
+            <div className="absolute right-0 mt-2 w-48 bg-[#1F192E] border border-white/10 rounded-2xl z-50">
+              {['Today', 'Yesterday'].map((opt) => (
+                <button key={opt} onClick={() => { setSelectedOption(opt); setIsOpen(false); }} className="w-full text-left px-5 py-3 text-xs font-bold text-white/50 hover:bg-white/5">{opt}</button>
               ))}
             </div>
           )}
         </div>
-      
       </div>
 
-      {/* --- Stats --- */}
-      <div className="flex gap-8 mt-4 shrink-0">
-        <div>
-          <p className="text-sm text-white/80">Opened</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <p className="text-2xl font-bold text-white">{totals.opened}</p>
-            <span className="text-xs text-white/60">0.00%</span>
-          </div>
+      {/* Stats Summary */}
+      <div className="flex gap-10 mb-8 px-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-[#3b82f6]">Opened</span>
+          <h3 className="text-3xl font-bold text-white">{totals.opened}</h3>
         </div>
-        <div>
-          <p className="text-sm text-white/80">Closed</p>
-          <div className="flex items-baseline gap-2 mt-1">
-            <p className="text-2xl font-bold text-white">{totals.closed}</p>
-            <span className="text-xs text-white/60">0.00%</span>
-          </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-[#22c55e]">Closed</span>
+          <h3 className="text-3xl font-bold text-white">{totals.closed}</h3>
         </div>
       </div>
 
-      
-      <div className="flex gap-4 mt-2 shrink-0">
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
-          <span className="text-xs text-white/60">Opened</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-          <span className="text-xs text-white/60">Closed</span>
-        </div>
-      </div>
-
-      {/* --- Graph --- */}
-      <div className="grow mt-4 min-h-[200px] relative z-0">
-        <ResponsiveContainer width="100%" minHeight={250}>
-          <LineChart
-            data={currentData} 
-            margin={{ top: 5, right: 10, left: -25, bottom: 0 }}
-          >
-            <CartesianGrid stroke="rgba(255, 255, 255, 0.2)" vertical={false} />
-            <XAxis 
-              dataKey="time" 
-              tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 12 }} 
-              axisLine={false} tickLine={false} 
-              padding={{ left: 30, right: 30 }} 
-              tickMargin={10}
-            />
-            <YAxis 
-              tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 12 }} 
-              axisLine={false} tickLine={false} 
-              domain={yAxisConfig.domain} 
-              ticks={yAxisConfig.ticks} 
-            />
+      {/* 📉 Graph Area: ระบุความสูงคงที่ใน div ครอบ */}
+      <div className="flex-1 w-full h-full min-h-[250px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={currentData}>
+            <defs>
+              <linearGradient id="colorOpened" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="colorClosed" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+            <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
             <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(32,41,59,0.8)', 
-                borderColor: 'rgba(255,255,255,0.3)', 
-                borderRadius: '8px', 
-                backdropFilter: 'blur(4px)' 
-              }} 
-              itemStyle={{ color: '#fff' }} 
-              labelStyle={{ color: '#fff', fontWeight: 'bold' }} 
+              contentStyle={{ backgroundColor: '#1F192E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+              itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
             />
-            <Line type="monotone" dataKey="opened" stroke="#3b82f6" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="closed" stroke="#22c55e" strokeWidth={2} dot={false} />
-          </LineChart>
+            <Area type="monotone" dataKey="opened" stroke="#3b82f6" strokeWidth={3} fill="url(#colorOpened)" />
+            <Area type="monotone" dataKey="closed" stroke="#22c55e" strokeWidth={3} fill="url(#colorClosed)" />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
-
     </div>
   );
 }

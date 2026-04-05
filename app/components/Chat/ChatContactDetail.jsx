@@ -24,7 +24,7 @@ export default function ContactDetails({ onClose, contact, onUpdateContact }) {
 
   if (!contact) {
     return (
-      <div className="w-[320px] max-h-[85vh] mt-3 ml-3 bg-[rgba(32,41,59,0.37)] border border-[rgba(254,253,253,0.5)] backdrop-blur-xl rounded-3xl shadow-2xl p-6 flex flex-col self-start text-white/70">
+      <div className="w-[320px] max-h-[85vh] mt-3 ml-3 bg-[#1E1B29] border border-[#BE7EC7]/10 rounded-3xl shadow-2xl p-6 flex items-center justify-center self-start text-[#BE7EC7] font-medium text-sm">
         Loading...
       </div>
     );
@@ -53,7 +53,7 @@ export default function ContactDetails({ onClose, contact, onUpdateContact }) {
   const EditButton = ({ onClick }) => (
     <button 
         onClick={onClick}
-        className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all border border-white/5 shadow-sm"
+        className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-[#BE7EC7]/20 text-white/50 hover:text-[#BE7EC7] transition-all border border-transparent hover:border-[#BE7EC7]/30"
         title="Edit"
     >
         <i className="fa-solid fa-pen text-xs"></i>
@@ -61,46 +61,52 @@ export default function ContactDetails({ onClose, contact, onUpdateContact }) {
   );
 
   return (
-    <div className="w-[320px] max-h-[85vh] mt-3 ml-3 bg-[rgba(32,41,59,0.25)] border border-[rgba(254,253,253,0.5)] backdrop-blur-xl rounded-3xl shadow-2xl p-6 flex flex-col self-start overflow-auto">
+    <div className="w-[320px] max-h-[85vh] mt-3 ml-3 bg-[#1E1B29] border border-[#BE7EC7]/10 rounded-3xl shadow-2xl p-6 flex flex-col self-start overflow-y-auto custom-scrollbar">
       
-      <h2 className="text-white text-2xl font-semibold mb-5">Contact details</h2>
+      <h2 className="text-white text-xl font-bold mb-5">Contact details</h2>
 
       {/* Profile Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-16 h-16 bg-linear-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-3xl shadow-lg shrink-0">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-16 h-16 bg-gradient-to-br from-[#BE7EC7] to-[#8a55b5] rounded-2xl flex items-center justify-center text-3xl shadow-lg shrink-0 text-white border border-white/10">
           {contact.avatar}
         </div>
         
-        <div>
-          <h3 className="text-white font-semibold text-lg truncate">{contact.name}</h3>
-          
+        <div className="min-w-0">
+          <h3 className="text-white font-semibold text-lg truncate leading-tight mb-1">{contact.name}</h3>
+          <span className="text-[10px] uppercase tracking-wider text-[#BE7EC7] bg-[#BE7EC7]/10 px-2 py-0.5 rounded-md border border-[#BE7EC7]/20">
+            Customer
+          </span>
         </div>
       </div>
 
       {/* Contact Fields */}
-      <div className="space-y-6">
-        <h4 className="text-white/90 font-semibold text-md mb-2 border-b border-white/10 pb-2">Contact fields</h4>
+      <div className="space-y-5">
+        <h4 className="text-white/60 font-semibold text-xs uppercase tracking-widest mb-2 border-b border-white/5 pb-2">Information</h4>
 
         {/* Phone */}
         <div>
-          <label className="text-white/50 text-[10px] uppercase tracking-wider mb-1 block">Phone Number</label>
+          <label className="text-white/40 text-[10px] uppercase tracking-wider mb-1 block">Phone Number</label>
           {isEditingPhone ? (
             <div className="flex gap-2 mt-1 animate-fade-in">
               <input
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="flex-1 bg-white/10 text-white text-sm rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-blue-400 border border-white/10"
+                className="flex-1 bg-white/5 text-white text-sm rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-[#BE7EC7] border border-white/10 placeholder:text-white/20 transition-all"
                 placeholder="0123456789"
                 autoFocus
               />
-              <button onClick={() => handleSave('phone')} className="bg-white/20 hover:bg-white/30 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors"><i className="fa-solid fa-check"></i></button>
-              <button onClick={() => setIsEditingPhone(false)} className="bg-white/10 hover:bg-white/20 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors"><i className="fa-solid fa-xmark"></i></button>
+              <button onClick={() => handleSave('phone')} className="bg-[#BE7EC7]/20 hover:bg-[#BE7EC7]/40 text-[#BE7EC7] w-9 h-9 rounded-xl flex items-center justify-center transition-colors">
+                <i className="fa-solid fa-check"></i>
+              </button>
+              <button onClick={() => setIsEditingPhone(false)} className="bg-white/5 hover:bg-white/10 text-white/50 w-9 h-9 rounded-xl flex items-center justify-center transition-colors border border-white/5">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
             </div>
           ) : (
-            <div className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2">
+            <div className="flex justify-between items-center p-2 rounded-xl hover:bg-white/5 transition-colors -mx-2 group">
               {contact.phone ? (
-                <p className="text-white text-sm font-medium">{contact.phone}</p>
+                <p className="text-white/90 text-sm font-medium">{contact.phone}</p>
               ) : (
                 <p className="text-white/30 text-sm italic">Add Phone Number</p>
               )}
@@ -111,24 +117,28 @@ export default function ContactDetails({ onClose, contact, onUpdateContact }) {
 
         {/* Email Address */}
         <div>
-          <label className="text-white/50 text-[10px] uppercase tracking-wider mb-1 block">Email Address</label>
+          <label className="text-white/40 text-[10px] uppercase tracking-wider mb-1 block">Email Address</label>
           {isEditingEmail ? (
             <div className="flex gap-2 mt-1 animate-fade-in">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 bg-white/10 text-white text-sm rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-blue-400 border border-white/10"
+                className="flex-1 bg-white/5 text-white text-sm rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-[#BE7EC7] border border-white/10 placeholder:text-white/20 transition-all"
                 placeholder="example@email.com"
                 autoFocus
               />
-              <button onClick={() => handleSave('email')} className="bg-white/20 hover:bg-white/30 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors"><i className="fa-solid fa-check"></i></button>
-              <button onClick={() => setIsEditingEmail(false)} className="bg-white/10 hover:bg-white/20 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors"><i className="fa-solid fa-xmark"></i></button>
+              <button onClick={() => handleSave('email')} className="bg-[#BE7EC7]/20 hover:bg-[#BE7EC7]/40 text-[#BE7EC7] w-9 h-9 rounded-xl flex items-center justify-center transition-colors">
+                <i className="fa-solid fa-check"></i>
+              </button>
+              <button onClick={() => setIsEditingEmail(false)} className="bg-white/5 hover:bg-white/10 text-white/50 w-9 h-9 rounded-xl flex items-center justify-center transition-colors border border-white/5">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
             </div>
           ) : (
-            <div className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2">
+            <div className="flex justify-between items-center p-2 rounded-xl hover:bg-white/5 transition-colors -mx-2 group">
               {contact.email ? (
-                <p className="text-white text-sm font-medium">{contact.email}</p>
+                <p className="text-white/90 text-sm font-medium truncate pr-2">{contact.email}</p>
               ) : (
                 <p className="text-white/30 text-sm italic">Add Email Address</p>
               )}
@@ -139,24 +149,28 @@ export default function ContactDetails({ onClose, contact, onUpdateContact }) {
 
         {/* Country */}
         <div>
-          <label className="text-white/50 text-[10px] uppercase tracking-wider mb-1 block">Country</label>
+          <label className="text-white/40 text-[10px] uppercase tracking-wider mb-1 block">Country</label>
           {isEditingCountry ? (
             <div className="flex gap-2 mt-1 animate-fade-in">
               <input
                 type="text"
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="flex-1 bg-white/10 text-white text-sm rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-blue-400 border border-white/10"
+                className="flex-1 bg-white/5 text-white text-sm rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-[#BE7EC7] border border-white/10 placeholder:text-white/20 transition-all"
                 placeholder="e.g. Thailand"
                 autoFocus
               />
-              <button onClick={() => handleSave('country')} className="bg-white/20 hover:bg-white/30 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors"><i className="fa-solid fa-check"></i></button>
-              <button onClick={() => setIsEditingCountry(false)} className="bg-white/10 hover:bg-white/20 text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors"><i className="fa-solid fa-xmark"></i></button>
+              <button onClick={() => handleSave('country')} className="bg-[#BE7EC7]/20 hover:bg-[#BE7EC7]/40 text-[#BE7EC7] w-9 h-9 rounded-xl flex items-center justify-center transition-colors">
+                <i className="fa-solid fa-check"></i>
+              </button>
+              <button onClick={() => setIsEditingCountry(false)} className="bg-white/5 hover:bg-white/10 text-white/50 w-9 h-9 rounded-xl flex items-center justify-center transition-colors border border-white/5">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
             </div>
           ) : (
-            <div className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2">
+            <div className="flex justify-between items-center p-2 rounded-xl hover:bg-white/5 transition-colors -mx-2 group">
               {contact.country ? (
-                <p className="text-white text-sm font-medium">{contact.country}</p>
+                <p className="text-white/90 text-sm font-medium">{contact.country}</p>
               ) : (
                 <p className="text-white/30 text-sm italic">Add Country</p>
               )}
@@ -169,7 +183,7 @@ export default function ContactDetails({ onClose, contact, onUpdateContact }) {
       {/* ปุ่ม Done */}
       <button
         onClick={onClose}
-        className="w-full bg-white/20 hover:bg-white/30 text-white font-bold py-3 rounded-xl transition-all mt-8 backdrop-blur-sm"
+        className="w-full mt-8 bg-[#BE7EC7]/10 hover:bg-[#BE7EC7]/20 text-[#BE7EC7] border border-[#BE7EC7]/20 hover:border-[#BE7EC7]/40 font-semibold py-2.5 rounded-xl transition-all"
       >
         Done
       </button>

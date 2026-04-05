@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; 
-import { Lock, ShieldCheck, Eye, EyeOff, KeyRound, CheckCircle2, ArrowRight, Chrome } from "lucide-react"; 
+import { Lock, ShieldCheck, Eye, EyeOff, KeyRound, CheckCircle2, ArrowRight, Chrome, ShieldAlert, Loader2 } from "lucide-react"; 
 
 export default function ChangePasswordPage() {
     const { data: session } = useSession(); 
@@ -70,140 +70,162 @@ export default function ChangePasswordPage() {
         }
     };
 
+    const inputClass = "w-full bg-[#1F192E] border border-white/5 focus:border-[#BE7EC7]/50 focus:bg-white/[0.04] outline-none rounded-xl py-3 px-4 text-white text-sm transition-all placeholder:text-white/10 shadow-inner";
+    const labelClass = "block text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-2 ml-1";
+
     return (
-        <div className="text-white flex items-center justify-center p-4 relative overflow-hidden">
-            <div className="w-full max-w-5xl bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col lg:flex-row gap-12 items-stretch min-h-[500px]">
                 
-                {/* Left Column */}
-                <div className="md:w-1/3 bg-black/20 p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5">
-                    <div>
-                        <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20">
-                            <ShieldCheck className="text-white w-8 h-8" />
+                {/* LEFT COLUMN: Security Info */}
+                <div className="w-full lg:w-80 shrink-0 flex flex-col">
+                    <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 h-full relative overflow-hidden flex flex-col">
+                        {/* Decorative Glow */}
+                        <div className="absolute -top-12 -left-12 w-32 h-32 bg-[#BE7EC7]/10 blur-[60px] rounded-full"></div>
+                        
+                        <div className="relative z-10">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#BE7EC7] to-pink-600 flex items-center justify-center mb-6 shadow-lg shadow-[#BE7EC7]/20">
+                                <ShieldCheck className="text-white" size={28} />
+                            </div>
+                            
+                            <h2 className="text-xl font-black text-white tracking-tight mb-3">Security Center</h2>
+                            <p className="text-white/40 text-xs leading-relaxed mb-8 font-medium">
+                                To protect your workspace data, we recommend changing your password every 90 days.
+                            </p>
+
+                            <div className="space-y-5">
+                                <h3 className="text-[10px] font-black text-[#BE7EC7] uppercase tracking-[0.2em]">Password Policy</h3>
+                                <ul className="space-y-4">
+                                    {[
+                                        "At least 8 characters",
+                                        "Includes a number",
+                                        "Includes a symbol (!@#$)"
+                                    ].map((req, i) => (
+                                        <li key={i} className="flex items-center gap-3 text-[11px] font-bold text-white/50">
+                                            <div className="w-5 h-5 rounded-full bg-[#BE7EC7]/10 flex items-center justify-center text-[#BE7EC7]">
+                                                <CheckCircle2 size={12} />
+                                            </div>
+                                            {req}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
-                        <h2 className="text-xl font-bold mb-2">Secure Your Account</h2>
-                        <p className="text-white/50 text-sm mb-8 leading-relaxed">
-                            To keep your account safe, we recommend using a strong password that you haven't used elsewhere.
-                        </p>
-                        <div className="space-y-4">
-                            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider">Password Requirements</h3>
-                            <ul className="space-y-3">
-                                <li className="flex items-center gap-3 text-sm text-white/70">
-                                    <CheckCircle2 size={16} className="text-emerald-400" /> At least 8 characters
-                                </li>
-                                <li className="flex items-center gap-3 text-sm text-white/70">
-                                    <CheckCircle2 size={16} className="text-emerald-400" /> Includes a number
-                                </li>
-                                <li className="flex items-center gap-3 text-sm text-white/70">
-                                    <CheckCircle2 size={16} className="text-emerald-400" /> Includes a symbol (!@#$)
-                                </li>
-                            </ul>
+
+                        <div className="mt-auto pt-8 flex items-center gap-3 opacity-20">
+                            <Lock size={14} />
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em]">End-to-End Encrypted</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Right Column: Form หรือ Google Warning */}
-                <div className="md:w-2/3 p-8 md:p-12 flex flex-col justify-center">
-                    
+                <div className="flex-1 flex flex-col justify-center">
                     {isGoogleUser ? (
-                        <div className="text-center flex flex-col items-center justify-center py-10">
-                            <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mb-6 shadow-xl">
-                                <Chrome size={32} className="text-white/80" />
+                        <div className="bg-[#1F192E] border border-white/5 rounded-[2.5rem] p-12 text-center flex flex-col items-center shadow-2xl">
+                            <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mb-8 shadow-2xl relative">
+                                <Chrome size={32} className="text-[#BE7EC7]" />
+                                <div className="absolute -top-1 -right-1 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center border-4 border-[#1F192E]">
+                                    <ShieldAlert size={12} className="text-white" />
+                                </div>
                             </div>
-                            <h2 className="text-2xl font-bold text-white mb-3">Google Account Linked</h2>
-                            <p className="text-white/50 max-w-md mx-auto mb-8">
-                                บัญชีนี้เชื่อมต่อผ่านระบบของ <b>Google</b> 
-                                คุณไม่สามารถเปลี่ยนรหัสผ่านจากที่นี่ได้ หากต้องการจัดการความปลอดภัย กรุณาตั้งค่าผ่าน Google Account ของคุณ
+                            <h2 className="text-2xl font-black text-white mb-3 tracking-tight">External Authentication</h2>
+                            <p className="text-white/40 text-sm max-w-sm leading-relaxed mb-10 font-medium">
+                                Your account is managed by <span className="text-white font-bold">Google SSO</span>. 
+                                Password management is handled through your Google account settings.
                             </p>
                             <button 
                                 onClick={() => router.back()}
-                                className="px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white font-medium transition-all"
+                                className="px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white text-xs font-black uppercase tracking-widest transition-all"
                             >
-                                กลับไปหน้าก่อนหน้า
+                                Back to Profile
                             </button>
                         </div>
                     ) : (
-
-                        <>
-                            <div className="mb-8">
-                                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-white to-white/60">
-                                    Change Password
-                                </h1>
-                                <p className="text-white/40 text-sm mt-1">Please enter your current password to set a new one.</p>
+                        <div className="space-y-10">
+                            <div>
+                                <h1 className="text-3xl font-black text-white tracking-tight">Change Password</h1>
+                                <p className="text-white/30 text-sm mt-1 font-medium">Enter your current password to authorize this change.</p>
                             </div>
 
-                            <form onSubmit={handleUpdate} className="space-y-6">
+                            <form onSubmit={handleUpdate} className="space-y-6 max-w-xl">
                                 {/* Current Password */}
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wider ml-1">Current Password</label>
-                                    <div className="relative group">
-                                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-emerald-400 transition-colors" size={18} />
+                                <div className="group">
+                                    <label className={labelClass}>Current Password</label>
+                                    <div className="relative">
+                                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#BE7EC7] transition-colors" size={18} />
                                         <input
                                             type={showCurrent ? "text" : "password"}
                                             value={currentPass}
                                             onChange={(e) => setCurrentPass(e.target.value)}
                                             placeholder="••••••••"
-                                            className="w-full rounded-xl pl-12 pr-12 py-3 bg-white/5 text-white placeholder-white/20 border border-white/10 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all"
+                                            className={`${inputClass} pl-12 pr-12`}
                                         />
-                                        <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
+                                        <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors">
                                             {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
                                     </div>
                                 </div>
 
-                                <hr className="border-white/5 my-2" />
+                                <div className="h-px bg-white/5 my-2"></div>
 
-                                {/* New Password */}
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wider ml-1">New Password</label>
-                                    <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-emerald-400 transition-colors" size={18} />
-                                        <input
-                                            type={showNew ? "text" : "password"}
-                                            value={newPass}
-                                            onChange={(e) => setNewPass(e.target.value)}
-                                            placeholder="Enter new password"
-                                            className="w-full rounded-xl pl-12 pr-12 py-3 bg-white/5 text-white placeholder-white/20 border border-white/10 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all"
-                                        />
-                                        <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
-                                            {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        </button>
+                                {/* New Password Inputs */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="group">
+                                        <label className={labelClass}>New Password</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#BE7EC7] transition-colors" size={18} />
+                                            <input
+                                                type={showNew ? "text" : "password"}
+                                                value={newPass}
+                                                onChange={(e) => setNewPass(e.target.value)}
+                                                placeholder="Min. 8 characters"
+                                                className={`${inputClass} pl-12 pr-12`}
+                                            />
+                                            <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors">
+                                                {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Confirm Password */}
-                                <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wider ml-1">Confirm New Password</label>
-                                    <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-emerald-400 transition-colors" size={18} />
-                                        <input
-                                            type={showConfirm ? "text" : "password"}
-                                            value={confirm}
-                                            onChange={(e) => setConfirm(e.target.value)}
-                                            placeholder="Re-enter new password"
-                                            className="w-full rounded-xl pl-12 pr-12 py-3 bg-white/5 text-white placeholder-white/20 border border-white/10 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all"
-                                        />
-                                        <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
-                                            {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        </button>
+                                    <div className="group">
+                                        <label className={labelClass}>Confirm New Password</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-[#BE7EC7] transition-colors" size={18} />
+                                            <input
+                                                type={showConfirm ? "text" : "password"}
+                                                value={confirm}
+                                                onChange={(e) => setConfirm(e.target.value)}
+                                                placeholder="Repeat password"
+                                                className={`${inputClass} pl-12 pr-12`}
+                                            />
+                                            <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors">
+                                                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Actions */}
-                                <div className="pt-6 border-t border-white/5 flex items-center justify-end gap-4">
-                                    <button type="button" onClick={() => router.back()} className="text-sm text-white/50 hover:text-white transition-colors px-4 py-2">
+                                <div className="pt-8 flex items-center justify-end gap-6 border-t border-white/5">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => router.back()} 
+                                        className="text-xs font-black uppercase tracking-widest text-white/20 hover:text-white/60 transition-colors"
+                                    >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className={`flex items-center gap-2 rounded-xl px-8 py-3 bg-linear-to-r from-emerald-600 to-teal-600 text-white font-semibold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:scale-[1.02] active:scale-[0.98] transition-all ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#BE7EC7] to-pink-600 text-white font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-[#BE7EC7]/20 hover:shadow-[#BE7EC7]/40 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                                     >
-                                        {isLoading ? "Updating..." : "Update Password"}
-                                        {!isLoading && <ArrowRight size={18} />}
+                                        {isLoading ? <Loader2 className="animate-spin" size={18} /> : <ArrowRight size={18} />}
+                                        {isLoading ? "Syncing..." : "Update Password"}
                                     </button>
                                 </div>
                             </form>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>

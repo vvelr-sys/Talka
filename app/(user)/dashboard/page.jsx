@@ -11,7 +11,7 @@ export default function page() {
         <DashboardStats />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-5">
         
         <div>
           <DashboardContacts />

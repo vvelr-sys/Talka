@@ -27,13 +27,12 @@ import {
   Sparkles,
 } from "lucide-react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
- const { data: session, status, update } = useSession();
+  const { data: session, status, update } = useSession();
 
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isOpenWorkspace, setIsOpenWorkspace] = useState(false);
@@ -103,7 +102,7 @@ export default function Sidebar() {
     }
   };
 
-useEffect(() => {
+  useEffect(() => {
     const syncProfile = async (shouldUpdateSession = false) => {
       if (status === "authenticated" && session?.user) {
         try {
@@ -224,40 +223,31 @@ useEffect(() => {
   return (
     <div className="flex p-3 h-screen">
       <div
-        className="relative w-[260px] h-full rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 shadow-2xl"
-        style={{
-          background:
-            "linear-gradient(165deg, rgba(35, 25, 40, 0.95) 0%, rgba(10, 8, 16, 0.98) 100%)",
-          border: "1px solid rgba(190, 126, 199, 0.1)",
-          boxShadow:
-            "0 20px 40px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.03)",
-        }}
+        className="relative w-[260px] h-full rounded-3xl overflow-hidden flex flex-col justify-between shadow-2xl bg-[#1a1423] border border-[#BE7EC7]/10"
       >
-        <div className="absolute top-0 left-0 w-full h-48 bg-[#BE7EC7]/10 blur-[80px] pointer-events-none"></div>
-        <div className="absolute bottom-0 right-0 w-full h-40 bg-[#BE7EC7]/5 blur-[60px] pointer-events-none"></div>
+        {/* เอา Effect เรืองแสงที่กินสเปคออก */}
 
         <div className="relative z-10 flex px-5 flex-col flex-1 overflow-y-auto custom-scrollbar pt-6">
         {/* Header: Notifications & User Profile */}
           <div className="flex items-center justify-between mb-8 gap-3">
-<div
+            <div
               className="flex items-center gap-3 flex-1 min-w-0 group cursor-pointer"
               onClick={() => setOpenUserMenu(!openUserMenu)}
             >
               <div className="relative">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm border border-white/10 shadow-lg shrink-0 transition-transform group-hover:scale-105 overflow-hidden"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm border border-white/10 shadow-lg shrink-0 overflow-hidden"
                   style={{
                     background: `linear-gradient(135deg, ${stringToColor(userName)}, ${stringToColor(userName + "dark")})`,
                   }}
                 >
-                  {/* 🟢 3.1 ซ่อนรูปภาพระหว่างโหลด */}
                   {(status === "loading" || isFetchingProfile) ? (
                      <div className="w-full h-full bg-white/10 animate-pulse"></div>
                   ) : avatar || session?.user?.image ? (
                     <img
                       src={avatar || session.user.image}
                       alt="Profile"
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110" 
+                      className="w-full h-full object-cover" 
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
@@ -269,7 +259,7 @@ useEffect(() => {
                 <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#1a1a2e] rounded-full flex items-center justify-center z-10">
                   <div 
                     className={`w-2 h-2 rounded-full ${
-                      onlineStatus?.toUpperCase() === "ONLINE" ? "bg-green-500 animate-pulse" : 
+                      onlineStatus?.toUpperCase() === "ONLINE" ? "bg-green-500" : 
                       onlineStatus?.toUpperCase() === "AWAY" ? "bg-yellow-500" : 
                       "bg-neutral-500"
                     }`}
@@ -278,7 +268,6 @@ useEffect(() => {
               </div>
 
               <div className="flex flex-col min-w-0 justify-center pt-1">
-                {/* 🟢 3.2 ซ่อนชื่อและ Role ระหว่างโหลด */}
                 {(status === "loading" || isFetchingProfile) ? (
                   <div className="space-y-2">
                     <div className="w-20 h-3 bg-white/10 animate-pulse rounded"></div>
@@ -286,7 +275,7 @@ useEffect(() => {
                   </div>
                 ) : (
                   <>
-                    <p className="text-white text-sm font-semibold truncate group-hover:text-[#BE7EC7] transition-colors leading-none">
+                    <p className="text-white text-sm font-semibold truncate group-hover:text-[#BE7EC7] leading-none">
                       {userName || session?.user?.name || "User"}
                     </p>
                     
@@ -315,25 +304,20 @@ useEffect(() => {
 
             <button
               onClick={() => setShowNotifications(true)}
-              className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-[#BE7EC7]/10 border border-white/5 hover:border-[#BE7EC7]/30 transition-all text-white/70 hover:text-[#e0b8e6]"
+              className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-[#BE7EC7]/10 border border-white/5 hover:border-[#BE7EC7]/30 text-white/70 hover:text-[#e0b8e6]"
             >
               <Bell size={18} />
               {notifications.length > 0 && (
-                <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-              )}
-              {notifications.length > 0 && (
-                <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full border border-[#1a1a2e]"></span>
+                <>
+                  <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                </>
               )}
             </button>
           </div>
 
-          {/* User Menu Dropdown */}
-          <AnimatePresence>
+          {/* User Menu Dropdown (ถอด Framer Motion ออก) */}
             {openUserMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              <div
                 className="absolute top-16 left-5 right-5 bg-[#1E1B29] border border-white/10 rounded-2xl shadow-xl p-2 z-50 overflow-hidden"
               >
                 <div className="text-xs font-semibold text-white/40 px-3 py-2 uppercase tracking-wider">
@@ -341,7 +325,7 @@ useEffect(() => {
                 </div>
                 <Link
                   href="/account/profile"
-                  className="flex items-center gap-3 px-3 py-2 text-sm text-white/80 hover:bg-white/5 hover:text-white rounded-lg transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-white/80 hover:bg-white/5 hover:text-white rounded-lg"
                 >
                   <div className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center">
                     <Users size={14} />
@@ -350,7 +334,7 @@ useEffect(() => {
                 </Link>
                 <Link
                   href="/account/notification"
-                  className="flex items-center gap-3 px-3 py-2 text-sm text-white/80 hover:bg-white/5 hover:text-white rounded-lg transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-white/80 hover:bg-white/5 hover:text-white rounded-lg"
                 >
                   <div className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center">
                     <Bell size={14} />
@@ -360,16 +344,15 @@ useEffect(() => {
                 <div className="h-px bg-white/5 my-1"></div>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg"
                 >
                   <div className="w-6 h-6 rounded-md bg-red-500/10 flex items-center justify-center">
                     <LogOut size={14} />
                   </div>{" "}
                   Logout
                 </button>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
 
           {/* Navigation Menu */}
           <div className="space-y-6">
@@ -384,7 +367,6 @@ useEffect(() => {
                   label="Tutorial"
                   pathname={pathname}
                 />
-                {/* ... เมนู Chat และ Dashboard เหมือนเดิม ... */}
                 <DropdownMenu
                   title="Chat"
                   icon={<MessageCircle size={18} />}
@@ -409,7 +391,6 @@ useEffect(() => {
               </nav>
             </div>
 
-            {/* 🟢 ครอบส่วน Management ด้วย userRole === "ADMIN" */}
             {userRole === "ADMIN" && (
               <div>
                 <p className="text-[10px] text-[#BE7EC7]/60 font-bold uppercase tracking-widest px-2 mb-2">
@@ -485,13 +466,13 @@ useEffect(() => {
               <div className="flex gap-1">
                 <button
                   onClick={() => setShowThemeModal(true)}
-                  className="p-1.5 rounded-lg text-white/40 hover:text-[#BE7EC7] hover:bg-white/10 transition-all"
+                  className="p-1.5 rounded-lg text-white/40 hover:text-[#BE7EC7] hover:bg-white/10"
                 >
                   <Palette size={12} />
                 </button>
                 <button
                   onClick={() => setShowBgModal(true)}
-                  className="p-1.5 rounded-lg text-white/40 hover:text-[#BE7EC7] hover:bg-white/10 transition-all"
+                  className="p-1.5 rounded-lg text-white/40 hover:text-[#BE7EC7] hover:bg-white/10"
                 >
                   <ImageIcon size={12} />
                 </button>
@@ -500,10 +481,10 @@ useEffect(() => {
 
             <button
               onClick={() => setIsOpenWorkspace(!isOpenWorkspace)}
-              className="w-full flex items-center justify-between gap-3 bg-white/5 border border-white/5 hover:border-[#BE7EC7]/30 hover:bg-white/10 text-white p-2.5 rounded-xl transition-all group"
+              className="w-full flex items-center justify-between gap-3 bg-white/5 border border-white/5 hover:border-[#BE7EC7]/30 hover:bg-white/10 text-white p-2.5 rounded-xl group"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 flex items-center justify-center bg-gradient-to-br from-[#BE7EC7] to-[#8a55b5] rounded-lg shadow-lg group-hover:shadow-[#BE7EC7]/30 transition-all">
+                <div className="w-8 h-8 flex items-center justify-center bg-[#BE7EC7] rounded-lg">
                   <Building2 size={16} className="text-white" />
                 </div>
                 <span className="font-medium text-sm truncate">
@@ -512,16 +493,12 @@ useEffect(() => {
               </div>
               <ChevronDown
                 size={14}
-                className={`text-white/50 transition-transform duration-300 ${isOpenWorkspace ? "rotate-180" : ""}`}
+                className={`text-white/50 ${isOpenWorkspace ? "rotate-180" : ""}`}
               />
             </button>
 
-            <AnimatePresence>
               {isOpenWorkspace && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                <div
                   className="absolute bottom-full mb-2 w-full bg-[#1E1B29] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
                 >
                   <div className="max-h-48 overflow-y-auto custom-scrollbar p-1">
@@ -532,26 +509,25 @@ useEffect(() => {
                           setSelectedWorkspace(ws);
                           setIsOpenWorkspace(false);
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs font-medium rounded-lg transition-colors flex items-center justify-between ${selectedWorkspace === ws ? "bg-[#BE7EC7] text-white" : "text-white/60 hover:bg-white/5 hover:text-white"}`}
+                        className={`w-full text-left px-3 py-2 text-xs font-medium rounded-lg flex items-center justify-between ${selectedWorkspace === ws ? "bg-[#BE7EC7] text-white" : "text-white/60 hover:bg-white/5 hover:text-white"}`}
                       >
                         {ws}
                         {selectedWorkspace === ws && <Check size={12} />}
                       </button>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
           </div>
 
           {/* Logo */}
-          <div className="flex items-center justify-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-500 py-2 border-t border-white/5">
+          <div className="flex items-center justify-center gap-2 opacity-50 hover:opacity-100 py-2 border-t border-white/5">
             <Image
               src="/images/LogoSidebar.png"
               alt="Talka"
               width={20}
               height={20}
-              className="object-contain grayscale hover:grayscale-0 transition-all"
+              className="object-contain"
             />
             <span className="text-xs font-bold tracking-[0.2em] text-white">
               TALKA
@@ -561,18 +537,14 @@ useEffect(() => {
       </div>
 
       {/* Notification Modal */}
-      <AnimatePresence>
         {showNotifications && (
           <div className="fixed inset-0 z-[100] flex items-start justify-end p-4 sm:p-6 pointer-events-none">
             <div
-              className="absolute inset-0 bg-black/20 pointer-events-auto"
+              className="absolute inset-0 bg-black/40 pointer-events-auto"
               onClick={() => setShowNotifications(false)}
             ></div>
-            <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 50, opacity: 0 }}
-              className="relative pointer-events-auto w-full max-w-sm bg-[#1E1B29]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden mt-10 mr-2"
+            <div
+              className="relative pointer-events-auto w-full max-w-sm bg-[#1E1B29] border border-white/10 rounded-2xl shadow-2xl overflow-hidden mt-10 mr-2"
             >
               <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/5">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -594,7 +566,7 @@ useEffect(() => {
                         router.push(`/chat/allchat?id=${n.id}`);
                         setShowNotifications(false);
                       }}
-                      className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors border border-transparent hover:border-white/5"
+                      className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer border border-transparent hover:border-white/5"
                     >
                       <img
                         src={n.profile}
@@ -609,7 +581,7 @@ useEffect(() => {
                             {n.time}
                           </span>
                         </div>
-                        <p className="text-xs text-white/60 line-clamp-1 group-hover:text-white/80 transition-colors">
+                        <p className="text-xs text-white/60 line-clamp-1 group-hover:text-white/80">
                           {n.message}
                         </p>
                         <div className="mt-1.5 flex items-center gap-1.5">
@@ -628,32 +600,24 @@ useEffect(() => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           </div>
         )}
-      </AnimatePresence>
 
       {/* Background & Theme Modals (Optimized) */}
-      <AnimatePresence>
         {(showBgModal || showThemeModal) && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
           >
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              className="absolute inset-0 bg-black/80"
               onClick={() => {
                 setShowBgModal(false);
                 setShowThemeModal(false);
               }}
             />
             {showBgModal && (
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
+              <div
                 className="relative bg-[#1E1B29] border border-white/10 p-6 rounded-3xl shadow-2xl max-w-2xl w-full"
               >
                 <h3 className="text-xl font-bold text-white mb-4">
@@ -685,13 +649,10 @@ useEffect(() => {
                     />
                   </label>
                 </div>
-              </motion.div>
+              </div>
             )}
             {showThemeModal && (
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
+              <div
                 className="relative bg-[#1E1B29] border border-white/10 p-6 rounded-3xl shadow-2xl max-w-md w-full"
               >
                 <h3 className="text-xl font-bold text-white mb-4">
@@ -702,7 +663,7 @@ useEffect(() => {
                     <button
                       key={t.id}
                       onClick={() => handleThemeChange(t.id)}
-                      className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${selectedTheme === t.id ? "bg-[#BE7EC7] border-[#BE7EC7] text-white" : "bg-white/5 border-white/5 text-white/60 hover:bg-white/10"}`}
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border ${selectedTheme === t.id ? "bg-[#BE7EC7] border-[#BE7EC7] text-white" : "bg-white/5 border-white/5 text-white/60 hover:bg-white/10"}`}
                     >
                       <t.icon size={24} />
                       <div className="text-left">
@@ -715,39 +676,28 @@ useEffect(() => {
                     </button>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }
 
-// Reusable Components with Enhanced Styles
+// Reusable Components with Optimized Styles
 
 function SidebarLink({ href, icon, label, pathname }) {
   const isActive = pathname.startsWith(href);
   return (
     <Link
       href={href}
-      className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 overflow-hidden ${
+      className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl overflow-hidden ${
         isActive
-          ? "text-white shadow-[0_0_20px_rgba(190,126,199,0.2)]"
+          ? "bg-[#BE7EC7]/20 text-white"
           : "text-white/60 hover:text-white hover:bg-white/5"
       }`}
     >
-      {isActive && (
-        <div className="absolute inset-0 bg-gradient-to-r from-[#BE7EC7]/80 to-[#8a55b5]/80 opacity-100 z-0"></div>
-      )}
-
-      {!isActive && (
-        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
-      )}
-
-      <div
-        className={`relative z-10 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`}
-      >
+      <div className={`relative z-10 ${isActive ? "text-[#BE7EC7]" : ""}`}>
         {icon}
       </div>
       <span
@@ -755,10 +705,6 @@ function SidebarLink({ href, icon, label, pathname }) {
       >
         {label}
       </span>
-
-      {isActive && (
-        <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-white shadow-lg z-10"></div>
-      )}
     </Link>
   );
 }
@@ -770,14 +716,14 @@ function DropdownMenu({ title, icon, links, isOpen, onToggle, pathname }) {
     <div className="mb-1">
       <button
         onClick={onToggle}
-        className={`w-full group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ${
+        className={`w-full group relative flex items-center gap-3 px-3 py-2.5 rounded-xl ${
           isOpen || isParentActive
             ? "bg-white/10 text-white"
             : "text-white/60 hover:text-white hover:bg-white/5"
         }`}
       >
         <div
-          className={`transition-transform duration-300 ${isOpen || isParentActive ? "text-[#BE7EC7] scale-110" : "group-hover:scale-110"}`}
+          className={`${isOpen || isParentActive ? "text-[#BE7EC7]" : ""}`}
         >
           {icon}
         </div>
@@ -788,18 +734,12 @@ function DropdownMenu({ title, icon, links, isOpen, onToggle, pathname }) {
         </span>
         <ChevronDown
           size={14}
-          className={`ml-auto transition-transform duration-300 opacity-50 ${isOpen ? "rotate-180 opacity-100 text-[#BE7EC7]" : ""}`}
+          className={`ml-auto opacity-50 ${isOpen ? "rotate-180 opacity-100 text-[#BE7EC7]" : ""}`}
         />
       </button>
 
-      <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
+          <div className="overflow-hidden">
             <div className="ml-5 pl-3 border-l border-white/10 space-y-1 py-1 mt-1">
               {links.map((link) => {
                 const isLinkActive = pathname === link.href;
@@ -807,10 +747,10 @@ function DropdownMenu({ title, icon, links, isOpen, onToggle, pathname }) {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`block w-full text-left px-3 py-2 rounded-lg text-xs transition-all duration-200 ${
+                    className={`block w-full text-left px-3 py-2 rounded-lg text-xs ${
                       isLinkActive
-                        ? "bg-[#BE7EC7]/20 text-[#e0b8e6] font-medium translate-x-1"
-                        : "text-white/50 hover:text-white hover:translate-x-1"
+                        ? "bg-[#BE7EC7]/20 text-[#e0b8e6] font-medium"
+                        : "text-white/50 hover:text-white hover:bg-white/5"
                     }`}
                   >
                     {link.label}
@@ -818,9 +758,8 @@ function DropdownMenu({ title, icon, links, isOpen, onToggle, pathname }) {
                 );
               })}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }
