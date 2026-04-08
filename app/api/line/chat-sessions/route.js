@@ -151,7 +151,10 @@ export async function GET(req) {
             platform: chat.platform.platform_name,
             
             // 🟢 2. แก้ไขตรงนี้ ให้ส่งกลับเป็น "ชื่อ Tag" แทนที่จะเป็น ID เพื่อให้หน้าบ้านใช้เปรียบเทียบได้ง่าย
-            tags: chat.tags.map(ct => ct.tag.tag_name), 
+            tags: chat.tags.map(ct => {
+                const match = ct.tag.tag_name.match(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)\s*(.*)/u);
+                return match ? match[2] : ct.tag.tag_name;
+            }), 
 
             messages: chat.messages.map(m => ({
                 id: m.message_id,
