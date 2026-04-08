@@ -59,16 +59,27 @@ function ChatPageContent() {
     const [availableTags, setAvailableTags] = useState(DEFAULT_TAGS);
 
     // 🟢 Fetch Initial Data from API
+   // 🟢 Fetch Initial Data from API
     useEffect(() => {
         const loadData = async () => {
             try {
-                const res = await fetch('/api/line/chat-sessions');
-                if (!res.ok) throw new Error('API Error');
-                const data = await res.json();
-                setChats(Array.isArray(data) ? data : []);
+                // 1. ดึงข้อมูล Chat
+                const chatRes = await fetch('/api/line/chat-sessions');
+                if (chatRes.ok) {
+                    const chatData = await chatRes.json();
+                    setChats(Array.isArray(chatData) ? chatData : []);
+                }
+
+                // 2. ดึงข้อมูล Tags ทั้งหมดจาก DB
+                const tagRes = await fetch('/api/tags');
+                if (tagRes.ok) {
+                    const tagData = await tagRes.json();
+                    // อัปเดต availableTags ด้วยข้อมูลจาก Database
+                    setAvailableTags(tagData); 
+                }
+
             } catch (error) {
-                console.error('❌ Failed to load chats:', error);
-                // Fallback: ใช้ข้อมูลว่างๆ เพื่อให้ UI แสดงได้
+                console.error('❌ Failed to load data:', error);
                 setChats([]);
             } finally {
                 setIsLoaded(true);
@@ -179,10 +190,47 @@ function ChatPageContent() {
         setActivityLogs(prev => [...prev, newLog]);
     };
 
-    const handleToggleTag = async (tagName) => {
-        if (!selectedChat) return;
-        addLog(selectedChat.id, 'tag', `Changed tag to "${tagName}"`);
-    };
+    // แก้ไขฟังก์ชัน handleToggleTag ในหน้า page.jsx
+const handleToggleTag = async (tagName) => {
+    if (!selectedChat) return;
+
+    // 1. อัปเดต UI ทันทีก่อนรอ API (Optimistic Update) ให้ผู้ใช้รู้สึกว่าระบบเร็ว
+    setChats(currentChats => currentChats.map(chat => {
+        if (chat.id === selectedChat.id) {
+            const currentTags = chat.tags || [];
+            const hasTag = currentTags.includes(tagName);
+            
+            // สลับสถานะ: ถ้ามีอยู่แล้วให้เอาออก ถ้าไม่มีให้เพิ่มเข้าไป
+            const newTags = hasTag
+                ? currentTags.filter(t => t !== tagName)
+                : [...currentTags, tagName];
+                
+            return { ...chat, tags: newTags };
+        }
+        return chat;
+    }));
+
+    // 2. เรียก API ไปยัง Backend เพื่อบันทึกลง Database
+    try {
+        const res = await fetch(`/api/chat-sessions/${selectedChat.id}/tags`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tagName })
+        });
+
+        if (!res.ok) throw new Error("Failed to update tag");
+
+        const result = await res.json();
+        
+        // 3. บันทึก Activity Log ตามผลลัพธ์ที่ได้จาก API
+        const actionText = result.action === 'added' ? 'Added' : 'Removed';
+        addLog(selectedChat.id, 'tag', `${actionText} tag "${tagName}"`);
+
+    } catch (error) {
+        console.error('❌ Error toggling tag:', error);
+        // หมายเหตุ: ในระบบ Production คุณอาจจะใส่ Logic เพื่อ Revert state กลับหากยิง API ไม่สำเร็จ
+    }
+};
 
     const handleUpdateStatus = async (newStatus) => {
         if (!selectedChat) return;
